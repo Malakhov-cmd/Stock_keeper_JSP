@@ -1,0 +1,16 @@
+#loginBodyId {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: #1d5dbc;
+}
+
+#loginMainContentId {
+    text-align: center;
+    margin-top: 35vh;
+}
+
+.form-registration {
+    width: 850px;
+    padding: 35px;
+}

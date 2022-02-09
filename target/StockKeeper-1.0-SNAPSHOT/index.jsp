@@ -11,10 +11,24 @@
             crossorigin="anonymous"></script>
     <script type="text/javascript"
             src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.0/dist/jquery.validate.min.js"></script>
+
+    <link href="static/style/indexStyles.css" rel="stylesheet">
 </head>
-<body>
-<div style="text-align: center">
-    <a href="/StockKeeper_war_exploded/login">Login</a>
+<body id="indexBody">
+<div id="indexPageId">
+    <div>
+        <a href="/StockKeeper_war_exploded/login" class="link-style">
+            <p class="text-Header-large">
+                Login
+            </p>
+            <p class="sub-title">
+                Analyze and multiply
+            </p>
+        </a>
+    </div>
 </div>
+<script type="text/javascript" src="static/js/three.min.js"></script>
+<script type="text/javascript" src="static/js/vanta.birds.min.js"></script>
+<script type="text/javascript" src="static/js/vantaDot.js"></script>
 </body>
 </html>

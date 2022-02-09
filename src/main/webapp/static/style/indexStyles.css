@@ -1,0 +1,32 @@
+#indexBody {
+    margin: 0;
+    display: flex;
+}
+
+#indexPageId {
+    min-height: 100vh;
+    min-width: 100vw;
+    position: unset !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.link-style{
+    text-decoration: none;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.text-Header-large {
+    font-size: 35px;
+    color: blanchedalmond;
+}
+
+.sub-title{
+    color: blanchedalmond;
+    font-size: 20px;
+}

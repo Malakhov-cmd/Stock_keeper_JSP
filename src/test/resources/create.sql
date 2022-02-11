@@ -29,8 +29,8 @@ create table stock_purpose
 create table usr
 (
     id       int8 not null,
-    password varchar(255),
-    usr_name varchar(255),
+    password varchar(255) not null,
+    usr_name varchar(255) not null,
     primary key (id)
 );
 alter table stock

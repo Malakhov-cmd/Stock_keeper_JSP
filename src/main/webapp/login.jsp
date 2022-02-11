@@ -41,7 +41,8 @@
                     <input type="password" class="form-control" id="inputPassword" name="password">
                 </div>
             </div>
-            <small class="text-muted">If you haven't registered yet, we will immediately create an account for you</small>
+            <small class="text-muted">If you haven't registered yet, we will immediately create an account for
+                you</small>
             <br>${message}
             <br><br>
             <button type="submit" class="btn btn-primary">Login/Registration</button>
@@ -52,25 +53,25 @@
 
     $(document).ready(function () {
         $("#loginForm").validate({
-            rules: {
-                name: {
-                    required: true,
-                    name: true
-                },
-
-                password: "required",
+            name: {
+                required: true,
+                minLength: 1
             },
-
+            password: {
+                required: true,
+                minLength: 1
+            },
             messages: {
                 name: {
-                    required: "Please enter email",
-                    name: "Please enter a valid email address"
+                    required: "Please enter name",
+                    minLength: "Please enter a valid name"
                 },
-
-                password: "Please enter password"
+                password: {
+                    required: "Please enter name",
+                    minLength: "Please enter a valid name"
+                }
             }
-        });
-
+        })
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
@@ -79,6 +80,5 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
         integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
         crossorigin="anonymous"></script>
-
 </body>
 </html>

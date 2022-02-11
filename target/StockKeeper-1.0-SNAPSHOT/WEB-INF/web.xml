@@ -30,5 +30,4 @@
         <servlet-name>main</servlet-name>
         <url-pattern>/stock</url-pattern>
     </servlet-mapping>
-
 </web-app>

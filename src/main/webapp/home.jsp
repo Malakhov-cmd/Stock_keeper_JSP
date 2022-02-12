@@ -73,6 +73,7 @@
                         <div class="collapse collapse-horizontal" id="collapseAddStockByIndex">
                             <form action="/StockKeeper_war_exploded/stock" method="post">
                                 <div class="form-floating mb-3">
+                                    <input class="form-control" type="hidden" value="${user.id}" name="userId">
                                     <input class="form-control" id="floatingIndex" placeholder="IBM" name="index">
                                     <label for="floatingIndex">Company Index</label>
                                 </div>

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stock.keeper.stockkeeper.service.DTO.StockApiDTO;
 import lombok.SneakyThrows;
+import org.apache.http.client.fluent.Content;
+import org.apache.http.client.fluent.Request;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 
@@ -62,66 +64,10 @@ public class TestStockAPI {
                 e.printStackTrace();
             }
         });
-
-        /*try {
-            System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 31_536_000_000L)));
-        } catch (IOException e) {
-            try {
-                System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 31_536_000_000L)));
-            } catch (IOException ex) {
-                try {
-                    System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 31_536_000_000L)));
-                } catch (IOException exc) {
-                    System.err.println("Data is invalid");
-                }
-            }
-        }
-
-        try {
-            System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 23_652_000_000L)));
-        } catch (IOException e) {
-            try {
-                System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 23_652_000_000L + 86_400_000L)));
-            } catch (IOException ex) {
-                try {
-                    System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 23_652_000_000L - 86_400_000L)));
-                } catch (IOException exc) {
-                    System.err.println("Data is invalid");
-                }
-            }
-        }
-
-        try {
-            System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 15_768_000_000L)));
-        } catch (IOException e) {
-            try {
-                System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 15_768_000_000L + 86_400_000L)));
-            } catch (IOException ex) {
-                try {
-                    System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 15_768_000_000L - 86_400_000L)));
-                } catch (IOException exc) {
-                    System.err.println("Data is invalid");
-                }
-            }
-        }
-
-        try {
-            System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 86_400_000L)));
-        } catch (IOException e) {
-            try {
-                System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 86_400_000L * 2)));
-            } catch (IOException ex) {
-                try {
-                    System.out.println(getStockDataByDateViaJSON("AAPL", formater.format(date.getTime() - 86_400_000L * 3)));
-                } catch (IOException exc) {
-                    System.err.println("Data is invalid");
-                }
-            }
-        }*/
     }
 
 
-    private String getStockDataByDateViaJSON(String index, String date, String keyAPI) throws IOException {
+    private String getStockDataByDateViaJSONBasic(String index, String date, String keyAPI) throws IOException {
         final URL url = new URL("https://api.polygon.io/v1/open-close/" + index + "/" + date + "?adjusted=false&apiKey=" + keyAPI);
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
@@ -137,6 +83,13 @@ public class TestStockAPI {
             content.append(inputLine);
         }
         return content.toString();
+
+    }
+
+    private String getStockDataByDateViaJSON(String index, String date, String keyAPI) throws IOException {
+        final Content getResult = Request.Get("https://api.polygon.io/v1/open-close/" + index + "/" + date + "?adjusted=false&apiKey=" + keyAPI)
+                .execute().returnContent();
+        return getResult.asString();
 
     }
 }

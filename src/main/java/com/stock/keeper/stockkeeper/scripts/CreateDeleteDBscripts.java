@@ -3,38 +3,39 @@ package com.stock.keeper.stockkeeper.scripts;
 import lombok.Getter;
 
 public enum CreateDeleteDBscripts {
-    createStatement("create table stock\n" +
+    createStatement("create sequence hibernate_sequence start 1 increment 1;\n" +
+            "create table stock\n" +
             "(\n" +
-            "    id          varchar(255) not null,\n" +
-            "    date_init   varchar(255),\n" +
-            "    description varchar(255),\n" +
-            "    img_link    varchar(255),\n" +
-            "    index       varchar(255),\n" +
+            "    id          SERIAL8 not null,\n" +
+            "    date_init   timestamp(255),\n" +
+            "    description varchar(4096),\n" +
+            "    img_link    varchar(512),\n" +
+            "    index       varchar(128),\n" +
             "    name        varchar(255),\n" +
-            "    usr_id      varchar(255),\n" +
+            "    usr_id      int8,\n" +
             "    primary key (id)\n" +
             ");\n" +
             "create table stock_price\n" +
             "(\n" +
-            "    id       varchar(255)   not null,\n" +
+            "    id       SERIAL8   not null,\n" +
             "    cost     float8 not null,\n" +
             "    date     timestamp,\n" +
-            "    stock_id varchar(255),\n" +
+            "    stock_id int8,\n" +
             "    primary key (id)\n" +
             ");\n" +
             "create table stock_purpose\n" +
             "(\n" +
-            "    id       varchar(255)   not null,\n" +
+            "    id       SERIAL8   not null,\n" +
             "    cost     float8 not null,\n" +
             "    date     timestamp,\n" +
-            "    stock_id varchar(255),\n" +
+            "    stock_id int8,\n" +
             "    primary key (id)\n" +
             ");\n" +
             "create table usr\n" +
             "(\n" +
-            "    id       varchar(255) not null,\n" +
-            "    password varchar(255),\n" +
-            "    usr_name varchar(255),\n" +
+            "    id       SERIAL8 not null,\n" +
+            "    password varchar(255) not null,\n" +
+            "    usr_name varchar(255) not null,\n" +
             "    primary key (id)\n" +
             ");\n" +
             "alter table stock\n" +

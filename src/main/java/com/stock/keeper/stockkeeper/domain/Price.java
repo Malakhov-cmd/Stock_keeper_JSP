@@ -4,16 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Date;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class Price {
-    private String id;
+    private Long id;
 
     private double cost;
-    private LocalDateTime date;
+    private Date date;
 
-    private Stock stock;
+    private Long stock_id;
 }

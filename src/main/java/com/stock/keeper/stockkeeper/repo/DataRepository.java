@@ -1,7 +1,12 @@
 package com.stock.keeper.stockkeeper.repo;
 
+import com.stock.keeper.stockkeeper.domain.Price;
+import com.stock.keeper.stockkeeper.domain.Purpose;
+import com.stock.keeper.stockkeeper.domain.Stock;
 import com.stock.keeper.stockkeeper.domain.User;
 
+import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface DataRepository {
@@ -11,17 +16,23 @@ public interface DataRepository {
 
     public List<User> selectUser(String name, String password);
 
-    public void selectStock();
+    Stock selectStockById(Long stockId);
+
+    List<Stock> selectStocksByUsrId(Long userId);
 
     public void selectPrice();
 
-    public void selectPurpose();
+    List<Purpose> selectPurposeBySrockId(Long stockId);
 
-    public User insertUser(String name, String password);
+    User insertUser(String name, String password);
 
-    public void insertStock();
+    Stock insertStock(
+            LocalDateTime dateInit, String description,
+            String imgLink, String index,
+            String name, Long usrId
+    );
 
-    public void insertPrice();
+    Price insertPrice(Double cost, Date date, Long stock_id);
 
     public void insertPurpose();
 

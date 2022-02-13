@@ -10,10 +10,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Data
 public class Purpose {
-    private String id;
+    private Long id;
 
     private double cost;
     private LocalDateTime date;
 
-    private Stock stock;
+    private Long stock_id;
 }

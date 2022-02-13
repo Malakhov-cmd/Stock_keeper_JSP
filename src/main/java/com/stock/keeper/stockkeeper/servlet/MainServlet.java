@@ -1,7 +1,10 @@
 package com.stock.keeper.stockkeeper.servlet;
 
+import com.stock.keeper.stockkeeper.domain.Stock;
 import com.stock.keeper.stockkeeper.domain.User;
+import com.stock.keeper.stockkeeper.repo.DataRepo;
 import com.stock.keeper.stockkeeper.service.LoginService;
+import com.stock.keeper.stockkeeper.service.StockDataAPIService;
 import lombok.NoArgsConstructor;
 
 import javax.servlet.RequestDispatcher;
@@ -11,18 +14,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.List;
 
 @NoArgsConstructor
-@WebServlet(name="main", value="/stock")
+@WebServlet(name = "main", value = "/stock")
 public class MainServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -32,8 +28,18 @@ public class MainServlet extends HttpServlet {
         String index = request.getParameter("index");
 
         if (index != null) {
-            String responce = getStockDataByIndexTicketViaAPI(index);
-            System.out.println(responce);
+            Long userId = Long.valueOf(request.getParameter("userId"));
+
+            StockDataAPIService apiService = new StockDataAPIService();
+            apiService.getResponceByAPI(index, userId);
+
+            DataRepo dataRepo = new DataRepo();
+            //List<Stock> stocks = dataRepo.selectStocksByUsrId(userId);
+            User user = dataRepo.selectUserById(userId);
+
+            HttpSession session = request.getSession();
+            //session.setAttribute("stocks", stocks);
+            session.setAttribute("user", user);
 
             RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
             dispatcher.forward(request, response);
@@ -46,6 +52,9 @@ public class MainServlet extends HttpServlet {
 
             if (user.getPassword() != null && user.getUsr_name() != null) {
                 HttpSession session = request.getSession();
+
+                session.setAttribute("userId", user.getId());
+
                 session.setAttribute("user", user);
                 destPage = "home.jsp";
             } else {
@@ -62,30 +71,5 @@ public class MainServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         RequestDispatcher requestDispatcher = req.getRequestDispatcher("home.jsp");
         requestDispatcher.forward(req, resp);
-    }
-
-    private String getStockDataByIndexTicketViaAPI(String index) throws IOException {
-        SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-
-        System.out.println(formater.format(date));
-
-        final URL url = new URL("https://api.polygon.io/v1/open-close/" + index +"/2021-10-21" + "?adjusted=false&apiKey=S9xvRnDm5whNDqDXaGriI3Wbcohpqy84");
-        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-        con.setRequestMethod("GET");
-        con.setRequestProperty("Content-Type", "application/json");
-
-        try (final BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-            String inputLine;
-            final StringBuilder content = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            return content.toString();
-        } catch (final Exception ex) {
-            ex.printStackTrace();
-            return "";
-        }
     }
 }

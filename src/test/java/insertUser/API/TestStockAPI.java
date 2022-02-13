@@ -66,6 +66,12 @@ public class TestStockAPI {
         });
     }
 
+    @SneakyThrows
+    @Test
+    public void getInfoTest(){
+        System.out.println(getStockInfoViaJSON("AAPL"));
+    }
+
 
     private String getStockDataByDateViaJSONBasic(String index, String date, String keyAPI) throws IOException {
         final URL url = new URL("https://api.polygon.io/v1/open-close/" + index + "/" + date + "?adjusted=false&apiKey=" + keyAPI);
@@ -90,6 +96,14 @@ public class TestStockAPI {
         final Content getResult = Request.Get("https://api.polygon.io/v1/open-close/" + index + "/" + date + "?adjusted=false&apiKey=" + keyAPI)
                 .execute().returnContent();
         return getResult.asString();
+    }
 
+    private String getStockInfoViaJSON(String index)
+            throws IOException {
+        return Request
+                .Get("https://api.polygon.io/v3/reference/tickers/" + index + "?apiKey=s8WqYhKmz0ZJ07x4X9hpC1hTEZaOWfGd")
+                .execute()
+                .returnContent()
+                .asString();
     }
 }

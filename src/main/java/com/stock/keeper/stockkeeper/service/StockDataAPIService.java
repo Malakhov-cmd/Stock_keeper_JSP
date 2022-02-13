@@ -3,19 +3,16 @@ package com.stock.keeper.stockkeeper.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.stock.keeper.stockkeeper.domain.Stock;
+import com.stock.keeper.stockkeeper.repo.DataRepo;
+import com.stock.keeper.stockkeeper.repo.DataRepository;
 import com.stock.keeper.stockkeeper.service.DTO.StockApiDTO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.http.client.fluent.Content;
 import org.apache.http.client.fluent.Request;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -33,10 +30,12 @@ public class StockDataAPIService {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final Long twoDaysValue = 86_400_000L;
+    private DataRepository dataRepository = new DataRepo();
 
-    public void getResponceByAPI(String ticker, String userId) {
-        getInfoAboutCompany(ticker).subscribe(
+    public void getResponceByAPI(String ticker, Long userId) {
+        /*getInfoAboutCompany(ticker).subscribe(
                 stock -> {
+                    System.out.println("STOCK info : "  + stock);
                     if (!stock.equals("Invalid data")) {
                         try {
                             fillInfoAboutStock(ticker, userId, stock);
@@ -45,10 +44,24 @@ public class StockDataAPIService {
                         }
                     }
                 }
-        );
+                );*/
+        try {
+            String stock = getStockInfoViaJSON(ticker);
+            System.out.println("STOCK info : "  + stock);
+            if (!stock.equals("Invalid data")) {
+                try {
+                    fillInfoAboutStock(ticker, userId, stock);
+                } catch (JsonProcessingException e) {
+                    System.err.println("JSON parsing exception");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
-    private Mono<String> getInfoAboutCompany(String ticker) {
+    /*private Mono<String> getInfoAboutCompany(String ticker) {
         return Mono
                 .empty()
                 .map(item -> {
@@ -58,9 +71,9 @@ public class StockDataAPIService {
                         return "Invalid data";
                     }
                 });
-    }
+    }*/
 
-    private Flux<String> getCostsData(String ticker) {
+    private Flux<String> getCostsData(String ticker, Long ownerId, String infoJSON) throws JsonProcessingException {
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
         Date date = new Date();
 
@@ -90,25 +103,34 @@ public class StockDataAPIService {
                 });
     }
 
-    private void fillInfoAboutStock(String ticker, String ownerId, String infoJSON) throws JsonProcessingException {
+    private void fillInfoAboutStock(String ticker, Long ownerId, String infoJSON) throws JsonProcessingException {
+
+        Stock stock = insertStock(ticker, ownerId, infoJSON);
+
+        getCostsData(ticker, ownerId, infoJSON).subscribe(stringStockDTO -> {
+            try {
+                StockApiDTO stockApiDTO = processDTOtoStock(stringStockDTO);
+                dataRepository.insertPrice(
+                        stockApiDTO.AveragePerDay(),
+                        stockApiDTO.getFrom(),
+                        stock.getId()
+                );
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private Stock insertStock(String ticker, Long ownerId, String infoJSON) throws JsonProcessingException {
         final ObjectNode node = new ObjectMapper().readValue(infoJSON, ObjectNode.class);
 
         String name = node.get("results").get("name").asText();
         String description = node.get("results").get("description").asText();
         String urlIMG = node.get("results").get("branding").get("icon_url").asText() + "?apiKey=" + KeyAPI_Img;
 
-        LocalDateTime nationalTime = LocalDateTime.now();
+        LocalDateTime initTime = LocalDateTime.now();
 
-        //TODO создать акцию в БД
-
-        getCostsData(ticker).subscribe(stringStockDTO -> {
-            try {
-                //TODO добавить в БД стоимости
-                processDTOtoStock(stringStockDTO);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        });
+        return dataRepository.insertStock(initTime, description, urlIMG, ticker, name, ownerId);
     }
 
     private String getStockInfoViaJSON(String index)
@@ -129,7 +151,8 @@ public class StockDataAPIService {
                 .asString();
     }
 
-    private void processDTOtoStock(String stringStockDTO) throws JsonProcessingException {
-        StockApiDTO stockApiDTO = objectMapper.readValue(stringStockDTO, StockApiDTO.class);
+    private StockApiDTO processDTOtoStock(String stringStockDTO)
+            throws JsonProcessingException {
+        return objectMapper.readValue(stringStockDTO, StockApiDTO.class);
     }
 }

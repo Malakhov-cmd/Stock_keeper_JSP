@@ -10,10 +10,10 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 public class User {
-    private String id;
+    private Long id;
 
     private String usr_name;
     private String password;
 
-    private List<Stock> stockList;
+    private List<Long> stockList;
 }

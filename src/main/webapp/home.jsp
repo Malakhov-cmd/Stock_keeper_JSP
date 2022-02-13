@@ -1,4 +1,12 @@
-<%@ page import="com.stock.keeper.stockkeeper.service.LoginService" %><%--
+<%@ page import="com.stock.keeper.stockkeeper.service.LoginService" %>
+<%@ page import="com.stock.keeper.stockkeeper.service.StockDataAPIService" %>
+<%@ page import="com.stock.keeper.stockkeeper.domain.Stock" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.*, java.text.*"  %>
+
+<%@ page import="java.util.List, java.text.*" %>
+<%@ page import="com.stock.keeper.stockkeeper.repo.DataRepo" %>
+<%@ page import="java.time.LocalDateTime" %><%--
   Created by IntelliJ IDEA.
   User: Георгий Малахов
   Date: 09.02.2022
@@ -82,8 +90,12 @@
                         </div>
                     </li>
                     <%
-                        LoginService loginService = new LoginService();
+                        Long userId = (Long) session.getAttribute("userId");
 
+                        DataRepo dataRepo = new DataRepo();
+                        List<Stock> stocks = dataRepo.selectStocksByUsrId(userId);
+                        out.println("<h1>Now is "+ stocks.size()
+                            +"</h1>");
                     %>
                     <li class="nav-item">
                         <a class="nav-link" href="#">
@@ -304,6 +316,7 @@
 <div style="text-align: center">
     <b>${user.usr_name} (${user.password})</b>
     <b>${message}</b>
+    <b>${stocks}</b>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"

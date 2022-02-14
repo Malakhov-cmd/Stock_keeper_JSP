@@ -378,8 +378,36 @@ public class DataRepo implements DataRepository {
     }
 
     @Override
-    public void insertPurpose() {
+    public Purpose insertPurpose(Double cost, Date date, Long stock_id) {
+        System.out.println("insert purpose");
 
+        Purpose purpose = new Purpose();
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     String.valueOf(InsertScripts.valueOf("insertPurpose").getState())
+             )
+        ) {
+            Long geteratedId = selectNextVal();
+
+            preparedStatement.setDouble(1, cost);
+            preparedStatement.setDate(2, date);
+            preparedStatement.setLong(3, stock_id);
+            preparedStatement.setLong(4, geteratedId);
+
+            preparedStatement.execute();
+
+            purpose.setId(geteratedId);
+            purpose.setDate(date);
+            purpose.setCost(cost);
+            purpose.setStock_id(stock_id);
+
+            return purpose;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Ошибка исполнения запроса");
+            return purpose;
+        }
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.stock.keeper.stockkeeper.servlet;
 import com.stock.keeper.stockkeeper.domain.User;
 import com.stock.keeper.stockkeeper.repo.DataRepo;
 import com.stock.keeper.stockkeeper.service.LoginService;
+import com.stock.keeper.stockkeeper.service.PurposeService;
 import com.stock.keeper.stockkeeper.service.StockDataAPIService;
 import lombok.NoArgsConstructor;
 
@@ -42,19 +43,26 @@ public class MainServlet extends HttpServlet {
         String purposeCostEntered = request.getParameter("purposeCost");
 
         HttpSession session = request.getSession();
+        DataRepo dataRepo = new DataRepo();
 
         if (purposeCostEntered != null) {
-            Long userId = Long.valueOf(request.getParameter("userId"));
+            Long userId = Long.valueOf(request.getParameter("userPurposeId"));
+            Long stockId = Long.valueOf(request.getParameter("stockPurposeId"));
             Double purposeCost = Double.valueOf(purposeCostEntered);
 
+            PurposeService purposeService = new PurposeService();
+            purposeService.insertStock(userId, stockId, purposeCost);
 
+            session.setAttribute("currentStock", dataRepo.selectStockById(stockId));
+
+            RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
+            dispatcher.forward(request, response);
         } else {
             if (newCurrent != null) {
                 Long newCurrentId = Long.valueOf(newCurrent);
 
-                DataRepo dataRepo = new DataRepo();
-
                 session.setAttribute("currentStock", dataRepo.selectStockById(newCurrentId));
+
                 RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
                 dispatcher.forward(request, response);
             } else {
@@ -65,7 +73,6 @@ public class MainServlet extends HttpServlet {
                     StockDataAPIService apiService = new StockDataAPIService();
                     apiService.getResponceByAPI(index, userId);
 
-                    DataRepo dataRepo = new DataRepo();
                     User user = dataRepo.selectUserById(userId);
 
                     session.setAttribute("user", user);

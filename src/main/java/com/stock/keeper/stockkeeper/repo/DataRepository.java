@@ -34,7 +34,7 @@ public interface DataRepository {
 
     Price insertPrice(Double cost, Date date, Long stock_id);
 
-    public void insertPurpose();
+    Purpose insertPurpose(Double cost, Date date, Long stock_id);
 
     public void updateUser();
 

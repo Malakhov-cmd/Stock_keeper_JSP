@@ -10,8 +10,8 @@
 <%@ page import="java.util.List, java.text.*" %>
 <%@ page import="com.stock.keeper.stockkeeper.repo.DataRepo" %>
 <%@ page import="java.time.LocalDateTime" %>
-<%@ page import="com.stock.keeper.stockkeeper.service.servicePriceEntity.Cost" %>
 <%@ page import="java.util.stream.Stream" %>
+<%@ page import="com.stock.keeper.stockkeeper.domain.Purpose" %>
 <%--
   Created by IntelliJ IDEA.
   User: Георгий Малахов
@@ -189,7 +189,8 @@
                 <div id="chartContainer" style="height: 670px; width: 100%;"></div>
                 <form action="/StockKeeper_war_exploded/stock" method="post">
                     <div class="form-floating mb-3">
-                        <input class="form-control" type="hidden" value="${user.id}" name="userId">
+                        <input class="form-control" type="hidden" value="${user.id}" name="userPurposeId">
+                        <input class="form-control" type="hidden" value="<%out.print(currentStock.getId());%>" name="stockPurposeId">
                         <input class="form-control" id="floatingAddpurpose" placeholder="Enter purpose cost" name="purposeCost">
                         <label for="floatingAddpurpose">Add purpose</label>
                     </div>
@@ -204,136 +205,25 @@
                     <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Header</th>
-                        <th scope="col">Header</th>
-                        <th scope="col">Header</th>
-                        <th scope="col">Header</th>
+                        <th scope="col">Wanted price</th>
+                        <th scope="col">Date purpose</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>1,001</td>
-                        <td>random</td>
-                        <td>data</td>
-                        <td>placeholder</td>
-                        <td>text</td>
-                    </tr>
-                    <tr>
-                        <td>1,002</td>
-                        <td>placeholder</td>
-                        <td>irrelevant</td>
-                        <td>visual</td>
-                        <td>layout</td>
-                    </tr>
-                    <tr>
-                        <td>1,003</td>
-                        <td>data</td>
-                        <td>rich</td>
-                        <td>dashboard</td>
-                        <td>tabular</td>
-                    </tr>
-                    <tr>
-                        <td>1,003</td>
-                        <td>information</td>
-                        <td>placeholder</td>
-                        <td>illustrative</td>
-                        <td>data</td>
-                    </tr>
-                    <tr>
-                        <td>1,004</td>
-                        <td>text</td>
-                        <td>random</td>
-                        <td>layout</td>
-                        <td>dashboard</td>
-                    </tr>
-                    <tr>
-                        <td>1,005</td>
-                        <td>dashboard</td>
-                        <td>irrelevant</td>
-                        <td>text</td>
-                        <td>placeholder</td>
-                    </tr>
-                    <tr>
-                        <td>1,006</td>
-                        <td>dashboard</td>
-                        <td>illustrative</td>
-                        <td>rich</td>
-                        <td>data</td>
-                    </tr>
-                    <tr>
-                        <td>1,007</td>
-                        <td>placeholder</td>
-                        <td>tabular</td>
-                        <td>information</td>
-                        <td>irrelevant</td>
-                    </tr>
-                    <tr>
-                        <td>1,008</td>
-                        <td>random</td>
-                        <td>data</td>
-                        <td>placeholder</td>
-                        <td>text</td>
-                    </tr>
-                    <tr>
-                        <td>1,009</td>
-                        <td>placeholder</td>
-                        <td>irrelevant</td>
-                        <td>visual</td>
-                        <td>layout</td>
-                    </tr>
-                    <tr>
-                        <td>1,010</td>
-                        <td>data</td>
-                        <td>rich</td>
-                        <td>dashboard</td>
-                        <td>tabular</td>
-                    </tr>
-                    <tr>
-                        <td>1,011</td>
-                        <td>information</td>
-                        <td>placeholder</td>
-                        <td>illustrative</td>
-                        <td>data</td>
-                    </tr>
-                    <tr>
-                        <td>1,012</td>
-                        <td>text</td>
-                        <td>placeholder</td>
-                        <td>layout</td>
-                        <td>dashboard</td>
-                    </tr>
-                    <tr>
-                        <td>1,013</td>
-                        <td>dashboard</td>
-                        <td>irrelevant</td>
-                        <td>text</td>
-                        <td>visual</td>
-                    </tr>
-                    <tr>
-                        <td>1,014</td>
-                        <td>dashboard</td>
-                        <td>illustrative</td>
-                        <td>rich</td>
-                        <td>data</td>
-                    </tr>
-                    <tr>
-                        <td>1,015</td>
-                        <td>random</td>
-                        <td>tabular</td>
-                        <td>information</td>
-                        <td>text</td>
-                    </tr>
+                    <%
+                        for (int i = 0; i < currentStock.getPurposeList().size(); i++) {
+                            out.println("<tr>\n" +
+                                    "                        <td>" + i++ +"</td>\n" +
+                                    "                        <td>" + currentStock.getPurposeList().get(i-1).getCost() +"</td>\n" +
+                                    "                        <td>"+ currentStock.getPurposeList().get(i-1).getDate().toString() +"</td>\n" +
+                                    "                    </tr>");
+                        }
+                    %>
                     </tbody>
                 </table>
             </div>
         </main>
     </div>
-</div>
-
-<div style="text-align: center">
-    <b>${user.usr_name} (${user.password})</b>
-    <b>${message}</b>
-    <b>${stocks}</b>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"

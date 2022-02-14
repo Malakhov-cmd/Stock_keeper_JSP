@@ -33,18 +33,6 @@ public class StockDataAPIService {
     private DataRepository dataRepository = new DataRepo();
 
     public void getResponceByAPI(String ticker, Long userId) {
-        /*getInfoAboutCompany(ticker).subscribe(
-                stock -> {
-                    System.out.println("STOCK info : "  + stock);
-                    if (!stock.equals("Invalid data")) {
-                        try {
-                            fillInfoAboutStock(ticker, userId, stock);
-                        } catch (JsonProcessingException e) {
-                            System.err.println("JSON parsing exception");
-                        }
-                    }
-                }
-                );*/
         try {
             String stock = getStockInfoViaJSON(ticker);
             System.out.println("STOCK info : "  + stock);

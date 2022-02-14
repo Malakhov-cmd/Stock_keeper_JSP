@@ -141,7 +141,7 @@ public class DataRepo implements DataRepository {
 
             while (resultSet.next()) {
                 findedStock.setId(resultSet.getLong("id"));
-                findedStock.setDate_init(LocalDateTime.from(resultSet.getTime("date_init").toLocalTime()));
+                findedStock.setDate_init(resultSet.getTimestamp("date_init").toLocalDateTime());
                 findedStock.setDescription(resultSet.getString("description"));
                 findedStock.setImg_link(resultSet.getString("Img_link"));
                 findedStock.setIndex(resultSet.getString("index"));
@@ -254,7 +254,7 @@ public class DataRepo implements DataRepository {
 
                 purpose.setId(resultSet.getLong("id"));
                 purpose.setCost(resultSet.getDouble("cost"));
-                purpose.setDate(LocalDateTime.from(resultSet.getTime("date").toLocalTime()));
+                purpose.setDate(resultSet.getDate("date"));
                 purpose.setStock_id(resultSet.getLong("stock_id"));
 
                 purposesList.add(purpose);

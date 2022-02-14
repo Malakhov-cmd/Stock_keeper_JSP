@@ -1,6 +1,5 @@
 package com.stock.keeper.stockkeeper.servlet;
 
-import com.stock.keeper.stockkeeper.domain.Stock;
 import com.stock.keeper.stockkeeper.domain.User;
 import com.stock.keeper.stockkeeper.repo.DataRepo;
 import com.stock.keeper.stockkeeper.service.LoginService;
@@ -15,55 +14,85 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.List;
 
 @NoArgsConstructor
 @WebServlet(name = "main", value = "/stock")
 public class MainServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        /*
+         * From registration
+         * */
         String name = request.getParameter("name");
         String password = request.getParameter("password");
 
+        /*
+         * From stock add panel
+         * */
         String index = request.getParameter("index");
 
-        if (index != null) {
+        /*
+         * From stock show button
+         * */
+        String newCurrent = request.getParameter("newCurrentStockId");
+
+        /*
+         * From add purpose
+         * */
+        String purposeCostEntered = request.getParameter("purposeCost");
+
+        HttpSession session = request.getSession();
+
+        if (purposeCostEntered != null) {
             Long userId = Long.valueOf(request.getParameter("userId"));
+            Double purposeCost = Double.valueOf(purposeCostEntered);
 
-            StockDataAPIService apiService = new StockDataAPIService();
-            apiService.getResponceByAPI(index, userId);
 
-            DataRepo dataRepo = new DataRepo();
-            //List<Stock> stocks = dataRepo.selectStocksByUsrId(userId);
-            User user = dataRepo.selectUserById(userId);
-
-            HttpSession session = request.getSession();
-            //session.setAttribute("stocks", stocks);
-            session.setAttribute("user", user);
-
-            RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
-            dispatcher.forward(request, response);
         } else {
+            if (newCurrent != null) {
+                Long newCurrentId = Long.valueOf(newCurrent);
 
-            LoginService loginService = new LoginService();
+                DataRepo dataRepo = new DataRepo();
 
-            User user = loginService.checkLogin(name, password);
-            String destPage = "login.jsp";
-
-            if (user.getPassword() != null && user.getUsr_name() != null) {
-                HttpSession session = request.getSession();
-
-                session.setAttribute("userId", user.getId());
-
-                session.setAttribute("user", user);
-                destPage = "home.jsp";
+                session.setAttribute("currentStock", dataRepo.selectStockById(newCurrentId));
+                RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
+                dispatcher.forward(request, response);
             } else {
-                String message = "Invalid name/password";
-                request.setAttribute("message", message);
-            }
 
-            RequestDispatcher dispatcher = request.getRequestDispatcher(destPage);
-            dispatcher.forward(request, response);
+                if (index != null) {
+                    Long userId = Long.valueOf(request.getParameter("userId"));
+
+                    StockDataAPIService apiService = new StockDataAPIService();
+                    apiService.getResponceByAPI(index, userId);
+
+                    DataRepo dataRepo = new DataRepo();
+                    User user = dataRepo.selectUserById(userId);
+
+                    session.setAttribute("user", user);
+
+                    RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
+                    dispatcher.forward(request, response);
+                } else {
+
+                    LoginService loginService = new LoginService();
+
+                    User user = loginService.checkLogin(name, password);
+                    String destPage = "login.jsp";
+
+                    if (user.getPassword() != null && user.getUsr_name() != null) {
+                        session.setAttribute("userId", user.getId());
+
+                        session.setAttribute("user", user);
+                        destPage = "home.jsp";
+                    } else {
+                        String message = "Invalid name/password";
+                        request.setAttribute("message", message);
+                    }
+
+                    RequestDispatcher dispatcher = request.getRequestDispatcher(destPage);
+                    dispatcher.forward(request, response);
+                }
+            }
         }
     }
 

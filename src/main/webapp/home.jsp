@@ -104,7 +104,7 @@
                     if (currentStock.getId() != null){
                         out.print(currentStock.getName());
                     } else {
-                        out.print("There is no stock picked");
+                        out.print("null. There is no stock picked");
                     }
                     %>"
                 },
@@ -156,7 +156,8 @@
                             <form action="/StockKeeper_war_exploded/stock" method="post" id="inputNewStockId">
                                 <div class="form-floating mb-3">
                                     <input class="form-control" type="hidden" value="${user.id}" name="userId">
-                                    <input class="form-control" id="floatingIndex" placeholder="IBM" required="required" minlength="1" name="index">
+                                    <input class="form-control" id="floatingIndex" placeholder="IBM" required="required"
+                                           minlength="1" name="index">
                                     <label for="floatingIndex">Company Index</label>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Add</button>
@@ -200,6 +201,15 @@
 
             <div>
                 <div id="chartContainer" style="height: 670px; width: 100%;"></div>
+
+                <form action="/StockKeeper_war_exploded/stock" method="post">
+                    <div class="form-floating mb-3">
+                        <input class="form-control" type="hidden" value="<%out.print(currentStock.getId());%>"
+                               name="stockRefreshId">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Refresh</button>
+                </form>
+
                 <form action="/StockKeeper_war_exploded/stock" method="post">
                     <div class="form-floating mb-3">
                         <input class="form-control" type="hidden" value="${user.id}" name="userPurposeId">
@@ -210,7 +220,7 @@
                                    name="purposeCost">
 
                             <label for="datepicker">Enter date:</label>
-                            <input class="form-control"  name="purposeDate" id="datepicker">
+                            <input class="form-control" name="purposeDate" id="datepicker">
                         </div>
 
                         <label for="floatingAddpurpose">Add purpose</label>

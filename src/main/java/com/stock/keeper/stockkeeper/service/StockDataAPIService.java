@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.http.client.fluent.Request;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -29,14 +30,14 @@ public class StockDataAPIService {
     private final String KeyAPI_Support_5 = "2XooTLjwl0vAGVAe5z7q5uZLQSbDuXNp";
     private final String KeyAPI_Support_6 = "X7rbgiA_cC3Flx_ohpu1pmpyaDqFauAW";
 
-    private final String KeyAPI_Error_Case = "xbC5mDo7lJT4o0W40xReBhBXp4rYgC3h";
+    private final String KeyAPI_Refresher = "xbC5mDo7lJT4o0W40xReBhBXp4rYgC3h";
 
     private final String KeyAPI_Info = "s8WqYhKmz0ZJ07x4X9hpC1hTEZaOWfGd";
     private final String KeyAPI_Img = "2CyqFAsm0z7nVjB6bAnmarfnixK8mCGL";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final Long dayValue = 43_200_000L;
+    private final Long dayValue = 86_400_000L;
     private DataRepository dataRepository = new DataRepo();
 
     public void getResponceByAPI(String ticker, Long userId) {
@@ -58,7 +59,7 @@ public class StockDataAPIService {
 
     }
 
-    private boolean isAlreadyInStockList(String ticker, Long userId){
+    private boolean isAlreadyInStockList(String ticker, Long userId) {
         return dataRepository
                 .selectStocksByUsrId(userId)
                 .stream()
@@ -162,5 +163,66 @@ public class StockDataAPIService {
     private StockApiDTO processDTOtoStock(String stringStockDTO)
             throws JsonProcessingException {
         return objectMapper.readValue(stringStockDTO, StockApiDTO.class);
+    }
+
+    public void refreshPriceStock(Long stockId) {
+        Stock stock = dataRepository.selectStockById(stockId);
+
+        SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+
+        if (stock
+                .getPriceList()
+                .stream()
+                .noneMatch(price ->
+                        formater.format(price.getDate().getTime())
+                                .equals(formater.format(date.getTime() - dayValue))
+                )) {
+                try {
+                    StockApiDTO stockApiDTO = processDTOtoStock(getFreshPrices(stock.getIndex()));
+                    dataRepository.insertPrice(
+                            stockApiDTO.AveragePerDay(),
+                            stockApiDTO.getFrom(),
+                            stock.getId()
+                    );
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+
+        }
+    }
+
+    private String getFreshPrices(String ticker) {
+        SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+
+        String stockData = "";
+
+        try {
+            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue), KeyAPI_Refresher);
+        } catch (IOException e) {
+            try {
+                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 2), KeyAPI_Refresher);
+            } catch (IOException ex) {
+                try {
+                    stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 3), KeyAPI_Refresher);
+                } catch (IOException exc) {
+                    try {
+                        stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 4), KeyAPI_Refresher);
+                    } catch (IOException ioException) {
+                        try {
+                            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 5), KeyAPI_Refresher);
+                        } catch (IOException exception) {
+                            try {
+                                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 6), KeyAPI_Refresher);
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return stockData;
     }
 }

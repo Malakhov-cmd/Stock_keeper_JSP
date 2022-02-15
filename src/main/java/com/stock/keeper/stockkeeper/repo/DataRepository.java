@@ -10,17 +10,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface DataRepository {
-    public void createDataBase();
+    void createDataBase();
 
-    public void deleteDataBase();
+    void deleteDataBase();
 
-    public List<User> selectUser(String name, String password);
+    List<User> selectUser(String name, String password);
 
     Stock selectStockById(Long stockId);
 
     List<Stock> selectStocksByUsrId(Long userId);
 
-    public void selectPrice();
+    void selectPrice();
 
     List<Purpose> selectPurposeBySrockId(Long stockId);
 
@@ -36,19 +36,9 @@ public interface DataRepository {
 
     Purpose insertPurpose(Double cost, Date date, Date purposeDate, Long stock_id);
 
-    public void updateUser();
+    void deleteStockById(Long stockId);
 
-    public void updateStock();
+    void deletePricesByStockId(Long stockId);
 
-    public void updatePrice();
-
-    public void updatePurpose();
-
-    public void deleteUser();
-
-    public void deleteStock();
-
-    public void deletePrice();
-
-    public void deletePurpose();
+    void deletePurposesByStockId(Long stockId);
 }

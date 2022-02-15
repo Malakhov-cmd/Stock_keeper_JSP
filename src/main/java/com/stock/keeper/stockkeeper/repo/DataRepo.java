@@ -5,6 +5,7 @@ import com.stock.keeper.stockkeeper.domain.Purpose;
 import com.stock.keeper.stockkeeper.domain.Stock;
 import com.stock.keeper.stockkeeper.domain.User;
 import com.stock.keeper.stockkeeper.scripts.CreateDeleteDBscripts;
+import com.stock.keeper.stockkeeper.scripts.DeleteScripts;
 import com.stock.keeper.stockkeeper.scripts.InsertScripts;
 import com.stock.keeper.stockkeeper.scripts.SelectScripts;
 
@@ -390,7 +391,7 @@ public class DataRepo implements DataRepository {
     }
 
     @Override
-    public Purpose insertPurpose(Double cost, Date date,Date purposeDate, Long stock_id) {
+    public Purpose insertPurpose(Double cost, Date date, Date purposeDate, Long stock_id) {
         System.out.println("insert purpose");
 
         Purpose purpose = new Purpose();
@@ -424,42 +425,59 @@ public class DataRepo implements DataRepository {
     }
 
     @Override
-    public void updateUser() {
+    public void deleteStockById(Long stockId) {
+        System.out.println("delete stock by id");
 
+        deletePricesByStockId(stockId);
+        deletePurposesByStockId(stockId);
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     String.valueOf(DeleteScripts.valueOf("deleteStockByUser").getState())
+             )
+        ) {
+            preparedStatement.setLong(1, stockId);
+
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Ошибка исполнения запроса");
+        }
     }
 
     @Override
-    public void updateStock() {
+    public void deletePricesByStockId(Long stockId) {
+        System.out.println("delete prices by stock Id");
 
+        try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     String.valueOf(DeleteScripts.valueOf("deletePricesByUser").getState())
+             )
+        ) {
+            preparedStatement.setLong(1, stockId);
+
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Ошибка исполнения запроса");
+        }
     }
 
     @Override
-    public void updatePrice() {
+    public void deletePurposesByStockId(Long stockId) {
+        System.out.println("delete purposes by stock Id");
 
-    }
+        try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     String.valueOf(DeleteScripts.valueOf("deletePurposesStockByUser").getState())
+             )
+        ) {
+            preparedStatement.setLong(1, stockId);
 
-    @Override
-    public void updatePurpose() {
-
-    }
-
-    @Override
-    public void deleteUser() {
-
-    }
-
-    @Override
-    public void deleteStock() {
-
-    }
-
-    @Override
-    public void deletePrice() {
-
-    }
-
-    @Override
-    public void deletePurpose() {
-
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Ошибка исполнения запроса");
+        }
     }
 }

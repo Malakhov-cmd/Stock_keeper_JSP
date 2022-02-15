@@ -40,3 +40,4 @@ alter table stock_price
     add constraint FK_Stock_Price_To_Stock foreign key (stock_id) references stock;
 alter table stock_purpose
     add constraint FK_Stock_Purpose_To_Stock foreign key (stock_id) references stock;
+

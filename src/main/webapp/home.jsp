@@ -185,6 +185,13 @@
                                                 "<button type=\"submit\" class=\"btn btn-primary\">Show</button>\n" +
                                                 "</div>\n" +
                                                 "</form>\n" +
+                                                "<form action=\"/StockKeeper_war_exploded/stock\" method=\"post\">\n" +
+                                                "<div class=\"card-show-info-btn\">\n" +
+                                                "<input class=\"form-control\" type=\"hidden\" value=\"" + item.getId() + "\" name=\"deleteStockId\">\n" +
+                                                "<input class=\"form-control\" type=\"hidden\" value=\"" + item.getOwner().getId() + "\" name=\"deleteStockOwnerId\">\n" +
+                                                "<button type=\"submit\" class=\"btn btn-primary\">Delete</button>\n" +
+                                                "</div>\n" +
+                                                "</form>\n" +
                                                 "</div>\n" +
                                                 "</li>\n");
                             }

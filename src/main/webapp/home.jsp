@@ -12,6 +12,7 @@
 <%@ page import="java.time.LocalDateTime" %>
 <%@ page import="java.util.stream.Stream" %>
 <%@ page import="com.stock.keeper.stockkeeper.domain.Purpose" %>
+<%@ page import="java.util.stream.Collectors" %>
 <%--
   Created by IntelliJ IDEA.
   User: Георгий Малахов
@@ -130,8 +131,8 @@
 <body>
 
 <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
-    <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="#">Stock Keeper</a>
-    <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+    <p class="navbar-brand col-md-3 col-lg-2 me-0 px-3">Stock Keeper</p>
+
     <div class="navbar-nav">
         <div class="nav-item text-nowrap">
             <a class="nav-link px-3" href="/StockKeeper_war_exploded">Sign out</a>
@@ -144,23 +145,23 @@
         <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
             <div class="position-sticky pt-3">
                 <ul class="nav flex-column">
-                    <li class="nav-item">
+                    <li class="nav-item add-stock-li">
                         <p>
                             <button class="btn" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapseAddStockByIndex" aria-expanded="false"
                                     aria-controls="collapseAddStockByIndex">
-                                Toggle width collapse
+                                Add new stock
                             </button>
                         </p>
                         <div class="collapse collapse-horizontal" id="collapseAddStockByIndex">
                             <form action="/StockKeeper_war_exploded/stock" method="post" id="inputNewStockId">
                                 <div class="form-floating mb-3">
                                     <input class="form-control" type="hidden" value="${user.id}" name="userId">
-                                    <input class="form-control" id="floatingIndex" placeholder="IBM" required="required"
+                                    <input class="form-control" id="floatingIndex" required="required"
                                            minlength="1" name="index">
-                                    <label for="floatingIndex">Company Index</label>
+                                    <label for="floatingIndex">Company Ticker</label>
+                                    <button type="submit" class="btn btn-primary stock-add-btn">Add</button>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Add</button>
                             </form>
                         </div>
                     </li>
@@ -177,9 +178,10 @@
                                                 "<img src=\"" + item.getImg_link() + "\" class=\"stock-card-img\"/>\n" +
                                                 "<div class=\"stock-card-info\">\n" +
                                                 "<div class=\"stock-card-info-ticker\">\n" + item.getIndex() + "</div>\n" +
-                                                "<div class=\"stock-card-info-name\">" + item.getName() + "</div>\n" +
+                                                "<div class=\"stock-card-info-name\"><p class=\"stock-card-text-info\">" + item.getName() + "<p></div>\n" +
                                                 "</div>\n" +
-                                                "<form action=\"/StockKeeper_war_exploded/stock\" method=\"post\">\n" +
+                                                "<div class=\"stock-card-forms\">" +
+                                                "<form action=\"/StockKeeper_war_exploded/stock\" method=\"post\" class=\"stock-card-first-form\">\n" +
                                                 "<div class=\"card-show-info-btn\">\n" +
                                                 "<input class=\"form-control\" type=\"hidden\" value=\"" + item.getId() + "\" name=\"newCurrentStockId\">\n" +
                                                 "<button type=\"submit\" class=\"btn btn-primary\">Show</button>\n" +
@@ -192,6 +194,7 @@
                                                 "<button type=\"submit\" class=\"btn btn-primary\">Delete</button>\n" +
                                                 "</div>\n" +
                                                 "</form>\n" +
+                                                "</div>\n" +
                                                 "</div>\n" +
                                                 "</li>\n");
                             }
@@ -206,40 +209,51 @@
                 <h1 class="h2">Stock cost graphic</h1>
             </div>
 
-            <div>
+            <div class="stock-graphic-main">
                 <div id="chartContainer" style="height: 670px; width: 100%;"></div>
 
-                <form action="/StockKeeper_war_exploded/stock" method="post">
-                    <div class="form-floating mb-3">
-                        <input class="form-control" type="hidden" value="<%out.print(currentStock.getId());%>"
-                               name="stockRefreshId">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Refresh</button>
-                </form>
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom control-panel-label">
+                    <h1 class="h2">Control panel</h1>
+                </div>
 
-                <form action="/StockKeeper_war_exploded/stock" method="post">
-                    <div class="form-floating mb-3">
+                <div class="stock-controls-forms">
+                    <form action="/StockKeeper_war_exploded/stock" method="post" class="form-stock-refresh">
+                        <div class="form-floating mb-3">
+                            <input class="form-control" type="hidden" value="<%out.print(currentStock.getId());%>"
+                                   name="stockRefreshId">
+                        </div>
+                        <button type="submit" class="btn btn-primary"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Get fresh price info">Refresh
+                        </button>
+                    </form>
+
+                    <form action="/StockKeeper_war_exploded/stock" method="post" class="form-stock-add-purpose">
                         <input class="form-control" type="hidden" value="${user.id}" name="userPurposeId">
                         <input class="form-control" type="hidden" value="<%out.print(currentStock.getId());%>"
                                name="stockPurposeId">
-                        <div class="inputs-purposes-data">
+
+                        <div class="form-floating mb-3 form-add-purpose-componet">
                             <input class="form-control" id="floatingAddpurpose" placeholder="Enter purpose cost"
                                    name="purposeCost">
-
-                            <label for="datepicker">Enter date:</label>
-                            <input class="form-control" name="purposeDate" id="datepicker">
+                            <label for="floatingAddpurpose">Enter purpose price</label>
                         </div>
 
-                        <label for="floatingAddpurpose">Add purpose</label>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Add</button>
-                </form>
+                        <div class="form-floating mb-3 form-add-purpose-componet">
+                            <input class="form-control" name="purposeDate" id="datepicker">
+                            <label for="datepicker">Enter date to purpose</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Add purpose">Add</button>
+
+                    </form>
+                </div>
             </div>
 
 
             <h2>Purposes</h2>
             <div class="table-responsive">
-                <table class="table table-striped table-sm">
+                <table class="table table-striped table-hover">
                     <thead>
                     <tr>
                         <th scope="col">#</th>
@@ -251,12 +265,21 @@
                     <tbody>
                     <%
                         if (currentStock.getId() != null)
+                            currentStock = dataRepo.selectStockById(currentStock.getId());
+
+                        currentStock.setPurposeList(currentStock
+                                .getPurposeList()
+                                .stream()
+                                .sorted(Comparator.comparingLong(Purpose::getId).reversed())
+                                .collect(Collectors.toList())
+                        );
+
                             for (int i = 0; i < currentStock.getPurposeList().size(); i++) {
                                 out.println("<tr>\n" +
-                                        "                        <td>" + i++ + "</td>\n" +
-                                        "                        <td>" + currentStock.getPurposeList().get(i - 1).getCost() + "</td>\n" +
-                                        "                        <td>" + currentStock.getPurposeList().get(i - 1).getPurposeDate().toString() + "</td>\n" +
-                                        "                        <td>" + currentStock.getPurposeList().get(i - 1).getDate().toString() + "</td>\n" +
+                                        "                        <td>" + i + "</td>\n" +
+                                        "                        <td>" + currentStock.getPurposeList().get(i).getCost() + "</td>\n" +
+                                        "                        <td>" + currentStock.getPurposeList().get(i).getPurposeDate().toString() + "</td>\n" +
+                                        "                        <td>" + currentStock.getPurposeList().get(i).getDate().toString() + "</td>\n" +
                                         "                    </tr>");
                             }
                     %>
@@ -277,6 +300,11 @@
 <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 
 <script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
     $(function () {
         $("#datepicker").datepicker();
     });

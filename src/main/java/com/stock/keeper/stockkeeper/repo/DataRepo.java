@@ -26,6 +26,7 @@ public class DataRepo implements DataRepository {
         } catch (SQLException e) {
             System.out.println("Установка соединения");
             //createDataBase();
+            //deleteDataBase();
         }
     }
 
@@ -46,7 +47,17 @@ public class DataRepo implements DataRepository {
 
     @Override
     public void deleteDataBase() {
-
+        System.out.println("Delete db");
+        try (Connection connection = DriverManager
+                .getConnection(DB_URL, USER, PASS);
+             PreparedStatement statement = connection.prepareStatement(
+                     String.valueOf(CreateDeleteDBscripts.valueOf("deleteDataBase").getState())
+             )
+        ) {
+            statement.execute();
+        } catch (SQLException e) {
+            System.err.println("Ошибка исполнения запроса");
+        }
     }
 
     private Long selectNextVal() {
@@ -255,6 +266,7 @@ public class DataRepo implements DataRepository {
                 purpose.setId(resultSet.getLong("id"));
                 purpose.setCost(resultSet.getDouble("cost"));
                 purpose.setDate(resultSet.getDate("date"));
+                purpose.setPurposeDate(resultSet.getDate("purpose_date"));
                 purpose.setStock_id(resultSet.getLong("stock_id"));
 
                 purposesList.add(purpose);
@@ -378,7 +390,7 @@ public class DataRepo implements DataRepository {
     }
 
     @Override
-    public Purpose insertPurpose(Double cost, Date date, Long stock_id) {
+    public Purpose insertPurpose(Double cost, Date date,Date purposeDate, Long stock_id) {
         System.out.println("insert purpose");
 
         Purpose purpose = new Purpose();
@@ -392,8 +404,9 @@ public class DataRepo implements DataRepository {
 
             preparedStatement.setDouble(1, cost);
             preparedStatement.setDate(2, date);
-            preparedStatement.setLong(3, stock_id);
-            preparedStatement.setLong(4, geteratedId);
+            preparedStatement.setDate(3, purposeDate);
+            preparedStatement.setLong(4, stock_id);
+            preparedStatement.setLong(5, geteratedId);
 
             preparedStatement.execute();
 

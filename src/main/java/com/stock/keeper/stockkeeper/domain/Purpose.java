@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Date;
-import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,6 +14,7 @@ public class Purpose {
 
     private double cost;
     private Date date;
+    private Date purposeDate;
 
     private Long stock_id;
 }

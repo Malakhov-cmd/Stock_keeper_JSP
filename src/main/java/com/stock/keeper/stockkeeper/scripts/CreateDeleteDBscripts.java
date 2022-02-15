@@ -25,10 +25,11 @@ public enum CreateDeleteDBscripts {
             ");\n" +
             "create table stock_purpose\n" +
             "(\n" +
-            "    id       SERIAL8   not null,\n" +
-            "    cost     float8 not null,\n" +
-            "    date     timestamp,\n" +
-            "    stock_id int8,\n" +
+            "    id             SERIAL8   not null,\n" +
+            "    cost           float8 not null,\n" +
+            "    date           timestamp,\n" +
+            "    purpose_date   timestamp not null,\n" +
+            "    stock_id       int8,\n" +
             "    primary key (id)\n" +
             ");\n" +
             "create table usr\n" +
@@ -43,7 +44,8 @@ public enum CreateDeleteDBscripts {
             "alter table stock_price\n" +
             "    add constraint FK_Stock_Price_To_Stock foreign key (stock_id) references stock;\n" +
             "alter table stock_purpose\n" +
-            "    add constraint FK_Stock_Purpose_To_Stock foreign key (stock_id) references stock;");
+            "    add constraint FK_Stock_Purpose_To_Stock foreign key (stock_id) references stock;"),
+    deleteDataBase("DROP DATABASE Testing;");
 
     @Getter
     private final String state;

@@ -21,7 +21,7 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
-    Stock currentStock;
+    Stock currentStock = new Stock();
 
     Object sessionAtr = session.getAttribute("currentStock");
 
@@ -33,20 +33,23 @@
     if (sessionAtr != null) {
         currentStock = (Stock) sessionAtr;
     } else {
-        currentStock = stocks.get(0);
+        if (stocks.size() != 0) {
+            currentStock = stocks.get(0);
+        }
     }
 %>
 
 <%
     Gson gsonObj = new Gson();
     List<Map<Object, Object>> list = new ArrayList<>();
-
-    currentStock.getPriceList().stream().forEach(item -> {
-        Map<Object, Object> map = new HashMap<>();
-        map.put("label", item.getDate());
-        map.put("y", item.getCost());
-        list.add(map);
-    });
+    if (currentStock.getId() != null) {
+        currentStock.getPriceList().stream().forEach(item -> {
+            Map<Object, Object> map = new HashMap<>();
+            map.put("label", item.getDate());
+            map.put("y", item.getCost());
+            list.add(map);
+        });
+    }
 
     String dataPoints = gsonObj.toJson(list);
 %>
@@ -69,7 +72,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
           crossorigin="anonymous">
-
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <style>
         .bd-placeholder-img {
             font-size: 1.125rem;
@@ -89,13 +93,20 @@
     <!-- Custom styles for this template -->
     <link href="static/style/mainStyle.css" rel="stylesheet">
 
+
     <script type="text/javascript">
         window.onload = function () {
 
             var chart = new CanvasJS.Chart("chartContainer", {
                 theme: "light2",
                 title: {
-                    text: "Prices of <%out.print(currentStock.getName());%>"
+                    text: "Prices of <%
+                    if (currentStock.getId() != null){
+                        out.print(currentStock.getName());
+                    } else {
+                        out.print("There is no stock picked");
+                    }
+                    %>"
                 },
                 axisX: {
                     title: "Dates"
@@ -142,10 +153,10 @@
                             </button>
                         </p>
                         <div class="collapse collapse-horizontal" id="collapseAddStockByIndex">
-                            <form action="/StockKeeper_war_exploded/stock" method="post">
+                            <form action="/StockKeeper_war_exploded/stock" method="post" id="inputNewStockId">
                                 <div class="form-floating mb-3">
                                     <input class="form-control" type="hidden" value="${user.id}" name="userId">
-                                    <input class="form-control" id="floatingIndex" placeholder="IBM" name="index">
+                                    <input class="form-control" id="floatingIndex" placeholder="IBM" required="required" minlength="1" name="index">
                                     <label for="floatingIndex">Company Index</label>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Add</button>
@@ -156,24 +167,26 @@
                         <span>Stock list</span>
                     </h4>
                     <%
-                        for (Stock item :
-                                stocks) {
-                            out.println(
-                                    "<li class=\"nav-item\">\n" +
-                                            "<div class=\"stock-card\">\n" +
-                                            "<img src=\"" + item.getImg_link() + "\" class=\"stock-card-img\"/>\n" +
-                                            "<div class=\"stock-card-info\">\n" +
-                                            "<div class=\"stock-card-info-ticker\">\n" + item.getIndex() + "</div>\n" +
-                                            "<div class=\"stock-card-info-name\">" + item.getName() + "</div>\n" +
-                                            "</div>\n" +
-                                            "<form action=\"/StockKeeper_war_exploded/stock\" method=\"post\">\n" +
-                                            "<div class=\"card-show-info-btn\">\n" +
-                                            "<input class=\"form-control\" type=\"hidden\" value=\"" + item.getId() + "\" name=\"newCurrentStockId\">\n" +
-                                            "<button type=\"submit\" class=\"btn btn-primary\">Show</button>\n" +
-                                            "</div>\n" +
-                                            "</form>\n" +
-                                            "</div>\n" +
-                                            "</li>\n");
+                        if (currentStock.getId() != null) {
+                            for (Stock item :
+                                    stocks) {
+                                out.println(
+                                        "<li class=\"nav-item\">\n" +
+                                                "<div class=\"stock-card\">\n" +
+                                                "<img src=\"" + item.getImg_link() + "\" class=\"stock-card-img\"/>\n" +
+                                                "<div class=\"stock-card-info\">\n" +
+                                                "<div class=\"stock-card-info-ticker\">\n" + item.getIndex() + "</div>\n" +
+                                                "<div class=\"stock-card-info-name\">" + item.getName() + "</div>\n" +
+                                                "</div>\n" +
+                                                "<form action=\"/StockKeeper_war_exploded/stock\" method=\"post\">\n" +
+                                                "<div class=\"card-show-info-btn\">\n" +
+                                                "<input class=\"form-control\" type=\"hidden\" value=\"" + item.getId() + "\" name=\"newCurrentStockId\">\n" +
+                                                "<button type=\"submit\" class=\"btn btn-primary\">Show</button>\n" +
+                                                "</div>\n" +
+                                                "</form>\n" +
+                                                "</div>\n" +
+                                                "</li>\n");
+                            }
                         }
                     %>
                 </ul>
@@ -190,8 +203,16 @@
                 <form action="/StockKeeper_war_exploded/stock" method="post">
                     <div class="form-floating mb-3">
                         <input class="form-control" type="hidden" value="${user.id}" name="userPurposeId">
-                        <input class="form-control" type="hidden" value="<%out.print(currentStock.getId());%>" name="stockPurposeId">
-                        <input class="form-control" id="floatingAddpurpose" placeholder="Enter purpose cost" name="purposeCost">
+                        <input class="form-control" type="hidden" value="<%out.print(currentStock.getId());%>"
+                               name="stockPurposeId">
+                        <div class="inputs-purposes-data">
+                            <input class="form-control" id="floatingAddpurpose" placeholder="Enter purpose cost"
+                                   name="purposeCost">
+
+                            <label for="datepicker">Enter date:</label>
+                            <input class="form-control"  name="purposeDate" id="datepicker">
+                        </div>
+
                         <label for="floatingAddpurpose">Add purpose</label>
                     </div>
                     <button type="submit" class="btn btn-primary">Add</button>
@@ -206,18 +227,21 @@
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Wanted price</th>
+                        <th scope="col">Date</th>
                         <th scope="col">Date purpose</th>
                     </tr>
                     </thead>
                     <tbody>
                     <%
-                        for (int i = 0; i < currentStock.getPurposeList().size(); i++) {
-                            out.println("<tr>\n" +
-                                    "                        <td>" + i++ +"</td>\n" +
-                                    "                        <td>" + currentStock.getPurposeList().get(i-1).getCost() +"</td>\n" +
-                                    "                        <td>"+ currentStock.getPurposeList().get(i-1).getDate().toString() +"</td>\n" +
-                                    "                    </tr>");
-                        }
+                        if (currentStock.getId() != null)
+                            for (int i = 0; i < currentStock.getPurposeList().size(); i++) {
+                                out.println("<tr>\n" +
+                                        "                        <td>" + i++ + "</td>\n" +
+                                        "                        <td>" + currentStock.getPurposeList().get(i - 1).getCost() + "</td>\n" +
+                                        "                        <td>" + currentStock.getPurposeList().get(i - 1).getPurposeDate().toString() + "</td>\n" +
+                                        "                        <td>" + currentStock.getPurposeList().get(i - 1).getDate().toString() + "</td>\n" +
+                                        "                    </tr>");
+                            }
                     %>
                     </tbody>
                 </table>
@@ -234,5 +258,11 @@
         crossorigin="anonymous"></script>
 
 <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+<script>
+    $(function () {
+        $("#datepicker").datepicker();
+    });
+</script>
 </body>
 </html>

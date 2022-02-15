@@ -12,23 +12,24 @@ create table stock
 );
 create table stock_price
 (
-    id       SERIAL8   not null,
-    cost     float8 not null,
+    id       SERIAL8 not null,
+    cost     float8  not null,
     date     timestamp,
     stock_id int8,
     primary key (id)
 );
 create table stock_purpose
 (
-    id       SERIAL8   not null,
-    cost     float8 not null,
-    date     timestamp,
-    stock_id int8,
+    id           SERIAL8   not null,
+    cost         float8    not null,
+    date         timestamp,
+    purpose_date timestamp not null,
+    stock_id     int8,
     primary key (id)
 );
 create table usr
 (
-    id       SERIAL8 not null,
+    id       SERIAL8      not null,
     password varchar(255) not null,
     usr_name varchar(255) not null,
     primary key (id)

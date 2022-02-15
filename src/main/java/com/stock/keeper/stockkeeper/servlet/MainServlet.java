@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.Date;
 
 @NoArgsConstructor
 @WebServlet(name = "main", value = "/stock")
@@ -49,9 +50,10 @@ public class MainServlet extends HttpServlet {
             Long userId = Long.valueOf(request.getParameter("userPurposeId"));
             Long stockId = Long.valueOf(request.getParameter("stockPurposeId"));
             Double purposeCost = Double.valueOf(purposeCostEntered);
+            String purposeDate = request.getParameter("purposeDate");
 
             PurposeService purposeService = new PurposeService();
-            purposeService.insertStock(userId, stockId, purposeCost);
+            purposeService.insertStock(userId, purposeDate, stockId, purposeCost);
 
             session.setAttribute("currentStock", dataRepo.selectStockById(stockId));
 
@@ -66,12 +68,11 @@ public class MainServlet extends HttpServlet {
                 RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
                 dispatcher.forward(request, response);
             } else {
-
                 if (index != null) {
                     Long userId = Long.valueOf(request.getParameter("userId"));
 
                     StockDataAPIService apiService = new StockDataAPIService();
-                    apiService.getResponceByAPI(index, userId);
+                    apiService.getResponceByAPI(index.toUpperCase(), userId);
 
                     User user = dataRepo.selectUserById(userId);
 

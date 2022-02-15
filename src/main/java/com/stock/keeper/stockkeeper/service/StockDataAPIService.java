@@ -21,7 +21,14 @@ import java.util.Date;
 @Data
 public class StockDataAPIService {
     private final String KeyAPI_Origin = "S9xvRnDm5whNDqDXaGriI3Wbcohpqy84";
-    private final String KeyAPI_Support = "mayjkucLrChPDlhaTpnIqAC2hijvY1m0";
+
+    private final String KeyAPI_Support_1 = "mayjkucLrChPDlhaTpnIqAC2hijvY1m0";
+    private final String KeyAPI_Support_2 = "ron4VZCL7YfIexBDqT1LL6hXmII52ehk";
+    private final String KeyAPI_Support_3 = "3N_1VkZEAzNy0sMdicgZO9TtA6BqqEfI";
+    private final String KeyAPI_Support_4 = "DQmFDhwAUp3TYxz2jJhXXqZRUO2384uF";
+    private final String KeyAPI_Support_5 = "2XooTLjwl0vAGVAe5z7q5uZLQSbDuXNp";
+    private final String KeyAPI_Support_6 = "X7rbgiA_cC3Flx_ohpu1pmpyaDqFauAW";
+
     private final String KeyAPI_Error_Case = "xbC5mDo7lJT4o0W40xReBhBXp4rYgC3h";
 
     private final String KeyAPI_Info = "s8WqYhKmz0ZJ07x4X9hpC1hTEZaOWfGd";
@@ -29,18 +36,20 @@ public class StockDataAPIService {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final Long twoDaysValue = 86_400_000L;
+    private final Long dayValue = 43_200_000L;
     private DataRepository dataRepository = new DataRepo();
 
     public void getResponceByAPI(String ticker, Long userId) {
         try {
-            String stock = getStockInfoViaJSON(ticker);
-            System.out.println("STOCK info : "  + stock);
-            if (!stock.equals("Invalid data")) {
-                try {
-                    fillInfoAboutStock(ticker, userId, stock);
-                } catch (JsonProcessingException e) {
-                    System.err.println("JSON parsing exception");
+            if (!isAlreadyInStockList(ticker, userId)) {
+                String stock = getStockInfoViaJSON(ticker);
+                System.out.println("STOCK info : " + stock);
+                if (!stock.equals("Invalid data")) {
+                    try {
+                        fillInfoAboutStock(ticker, userId, stock);
+                    } catch (JsonProcessingException e) {
+                        System.err.println("JSON parsing exception");
+                    }
                 }
             }
         } catch (IOException e) {
@@ -49,17 +58,12 @@ public class StockDataAPIService {
 
     }
 
-    /*private Mono<String> getInfoAboutCompany(String ticker) {
-        return Mono
-                .empty()
-                .map(item -> {
-                    try {
-                        return getStockInfoViaJSON(ticker);
-                    } catch (IOException e) {
-                        return "Invalid data";
-                    }
-                });
-    }*/
+    private boolean isAlreadyInStockList(String ticker, Long userId){
+        return dataRepository
+                .selectStocksByUsrId(userId)
+                .stream()
+                .anyMatch(stock -> stock.getIndex().equals(ticker));
+    }
 
     private Flux<String> getCostsData(String ticker, Long ownerId, String infoJSON) throws JsonProcessingException {
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
@@ -78,12 +82,28 @@ public class StockDataAPIService {
                         stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue), KeyAPI_Origin);
                     } catch (IOException e) {
                         try {
-                            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - twoDaysValue * 3), KeyAPI_Support);
+                            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue), KeyAPI_Support_1);
                         } catch (IOException ex) {
                             try {
-                                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue + twoDaysValue * 3), KeyAPI_Error_Case);
+                                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 2), KeyAPI_Support_2);
                             } catch (IOException exp) {
-                                System.err.println("Invalid data");
+                                try {
+                                    stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 3), KeyAPI_Support_3);
+                                } catch (IOException expt) {
+                                    try {
+                                        stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 4), KeyAPI_Support_4);
+                                    } catch (IOException exptn) {
+                                        try {
+                                            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 5), KeyAPI_Support_5);
+                                        } catch (IOException exptnv) {
+                                            try {
+                                                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 6), KeyAPI_Support_6);
+                                            } catch (IOException exptnvl) {
+                                                System.err.println("Invalid data");
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

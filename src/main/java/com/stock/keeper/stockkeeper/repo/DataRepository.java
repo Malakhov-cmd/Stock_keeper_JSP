@@ -20,8 +20,6 @@ public interface DataRepository {
 
     List<Stock> selectStocksByUsrId(Long userId);
 
-    void selectPrice();
-
     List<Purpose> selectPurposeBySrockId(Long stockId);
 
     User insertUser(String name, String password);

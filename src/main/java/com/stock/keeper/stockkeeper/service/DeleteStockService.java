@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 public class DeleteStockService {
     private final DataRepository dataRepo = new DataRepo();
 
-    public void deleteStock(Long deleteStockId, Long deleteStockOwnerId){
+    public void deleteStock(Long deleteStockId){
         dataRepo.deleteStockById(deleteStockId);
     }
 }

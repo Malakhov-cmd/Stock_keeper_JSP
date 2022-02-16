@@ -11,7 +11,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.http.client.fluent.Request;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -40,14 +39,14 @@ public class StockDataAPIService {
     private final Long dayValue = 86_400_000L;
     private DataRepository dataRepository = new DataRepo();
 
-    public void getResponceByAPI(String ticker, Long userId) {
+    public Stock getResponceByAPI(String ticker, Long userId) {
         try {
             if (!isAlreadyInStockList(ticker, userId)) {
                 String stock = getStockInfoViaJSON(ticker);
                 System.out.println("STOCK info : " + stock);
                 if (!stock.equals("Invalid data")) {
                     try {
-                        fillInfoAboutStock(ticker, userId, stock);
+                       return fillInfoAboutStock(ticker, userId, stock);
                     } catch (JsonProcessingException e) {
                         System.err.println("JSON parsing exception");
                     }
@@ -56,7 +55,7 @@ public class StockDataAPIService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        return null;
     }
 
     private boolean isAlreadyInStockList(String ticker, Long userId) {
@@ -112,7 +111,7 @@ public class StockDataAPIService {
                 });
     }
 
-    private void fillInfoAboutStock(String ticker, Long ownerId, String infoJSON) throws JsonProcessingException {
+    private Stock fillInfoAboutStock(String ticker, Long ownerId, String infoJSON) throws JsonProcessingException {
 
         Stock stock = insertStock(ticker, ownerId, infoJSON);
 
@@ -128,6 +127,8 @@ public class StockDataAPIService {
                 e.printStackTrace();
             }
         });
+
+        return stock;
     }
 
     private Stock insertStock(String ticker, Long ownerId, String infoJSON) throws JsonProcessingException {
@@ -135,8 +136,13 @@ public class StockDataAPIService {
 
         String name = node.get("results").get("name").asText();
         String description = node.get("results").get("description").asText();
-        String urlIMG = node.get("results").get("branding").get("icon_url").asText() + "?apiKey=" + KeyAPI_Img;
 
+        String urlIMG = "";
+        try {
+            urlIMG = node.get("results").get("branding").get("icon_url").asText() + "?apiKey=" + KeyAPI_Img;
+        } catch (NullPointerException ex){
+            urlIMG = "https://www.publicdomainpictures.net/pictures/280000/nahled/not-found-image-15383864787lu.jpg";
+        }
         LocalDateTime initTime = LocalDateTime.now();
 
         return dataRepository.insertStock(initTime, description, urlIMG, ticker, name, ownerId);
@@ -165,7 +171,7 @@ public class StockDataAPIService {
         return objectMapper.readValue(stringStockDTO, StockApiDTO.class);
     }
 
-    public void refreshPriceStock(Long stockId) {
+    public Stock refreshPriceStock(Long stockId) {
         Stock stock = dataRepository.selectStockById(stockId);
 
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
@@ -185,11 +191,14 @@ public class StockDataAPIService {
                             stockApiDTO.getFrom(),
                             stock.getId()
                     );
+
+                    stock = dataRepository.selectStockById(stockId);
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
 
         }
+        return stock;
     }
 
     private String getFreshPrices(String ticker) {

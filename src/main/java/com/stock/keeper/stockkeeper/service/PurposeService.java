@@ -4,7 +4,6 @@ import com.stock.keeper.stockkeeper.repo.DataRepo;
 import com.stock.keeper.stockkeeper.repo.DataRepository;
 import lombok.NoArgsConstructor;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,7 +14,7 @@ import java.util.Date;
 public class PurposeService {
     private final DataRepository dataRepo = new DataRepo();
 
-    public void insertStock(Long userId, String purposeDate, Long stockId, Double purposeCost) {
+    public void insertStock(String purposeDate, Long stockId, Double purposeCost) {
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
 
         DateTimeFormatter formatterDatePicker = new DateTimeFormatterBuilder()

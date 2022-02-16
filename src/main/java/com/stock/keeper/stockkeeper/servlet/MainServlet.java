@@ -1,5 +1,6 @@
 package com.stock.keeper.stockkeeper.servlet;
 
+import com.stock.keeper.stockkeeper.domain.Stock;
 import com.stock.keeper.stockkeeper.domain.User;
 import com.stock.keeper.stockkeeper.repo.DataRepo;
 import com.stock.keeper.stockkeeper.service.DeleteStockService;
@@ -16,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.sql.Date;
 
 @NoArgsConstructor
 @WebServlet(name = "main", value = "/stock")
@@ -46,93 +46,122 @@ public class MainServlet extends HttpServlet {
 
 
         /*
-        * From refresh stock
-        * */
+         * From refresh stock
+         * */
         String refreshStockId = request.getParameter("stockRefreshId");
 
         /*
-        * From delete stock
-        * */
+         * From delete stock
+         * */
         String deleteStockId = request.getParameter("deleteStockId");
 
         HttpSession session = request.getSession();
         DataRepo dataRepo = new DataRepo();
 
         if (deleteStockId != null) {
-            Long deleteStockOnwerId = Long.valueOf(request.getParameter("deleteStockOwnerId"));
-
-            DeleteStockService deleteStockService = new DeleteStockService();
-            deleteStockService.deleteStock(Long.valueOf(deleteStockId), deleteStockOnwerId);
-
-            RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
-            dispatcher.forward(request, response);
-
+            deleteStock(request, response, deleteStockId, session, dataRepo);
         } else {
             if (refreshStockId != null) {
-                StockDataAPIService apiService = new StockDataAPIService();
-                apiService.refreshPriceStock(Long.valueOf(refreshStockId));
-
-                RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
-                dispatcher.forward(request, response);
+                refreshStockCost(request, response, session, refreshStockId);
             } else {
                 if (purposeCostEntered != null) {
-                    Long userId = Long.valueOf(request.getParameter("userPurposeId"));
-                    Long stockId = Long.valueOf(request.getParameter("stockPurposeId"));
-                    Double purposeCost = Double.valueOf(purposeCostEntered);
-                    String purposeDate = request.getParameter("purposeDate");
-
-                    PurposeService purposeService = new PurposeService();
-                    purposeService.insertStock(userId, purposeDate, stockId, purposeCost);
-
-                    session.setAttribute("currentStock", dataRepo.selectStockById(stockId));
-
-                    RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
-                    dispatcher.forward(request, response);
+                    addPurpose(request, response, purposeCostEntered, session, dataRepo);
                 } else {
                     if (newCurrent != null) {
-                        Long newCurrentId = Long.valueOf(newCurrent);
-
-                        session.setAttribute("currentStock", dataRepo.selectStockById(newCurrentId));
-
-                        RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
-                        dispatcher.forward(request, response);
+                        changeCurrentStock(request, response, newCurrent, session, dataRepo);
                     } else {
                         if (index != null) {
-                            Long userId = Long.valueOf(request.getParameter("userId"));
-
-                            StockDataAPIService apiService = new StockDataAPIService();
-                            apiService.getResponceByAPI(index.toUpperCase(), userId);
-
-                            User user = dataRepo.selectUserById(userId);
-
-                            session.setAttribute("user", user);
-
-                            RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
-                            dispatcher.forward(request, response);
+                            addStock(request, response, index, session, dataRepo);
                         } else {
-
-                            LoginService loginService = new LoginService();
-
-                            User user = loginService.checkLogin(name, password);
-                            String destPage = "login.jsp";
-
-                            if (user.getPassword() != null && user.getUsr_name() != null) {
-                                session.setAttribute("userId", user.getId());
-
-                                session.setAttribute("user", user);
-                                destPage = "home.jsp";
-                            } else {
-                                String message = "Invalid name/password";
-                                request.setAttribute("message", message);
-                            }
-
-                            RequestDispatcher dispatcher = request.getRequestDispatcher(destPage);
-                            dispatcher.forward(request, response);
+                            loginOperatopn(request, response, name, password, session);
                         }
                     }
                 }
             }
         }
+    }
+
+    private void loginOperatopn(HttpServletRequest request, HttpServletResponse response, String name, String password, HttpSession session) throws ServletException, IOException {
+        LoginService loginService = new LoginService();
+
+        User user = loginService.checkLogin(name, password);
+        String destPage = "login.jsp";
+
+        if (user.getPassword() != null && user.getUsr_name() != null) {
+            session.setAttribute("userId", user.getId());
+
+            session.setAttribute("user", user);
+            destPage = "home.jsp";
+        } else {
+            String message = "Invalid name/password";
+            request.setAttribute("message", message);
+        }
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher(destPage);
+        dispatcher.forward(request, response);
+    }
+
+    private void addStock(HttpServletRequest request, HttpServletResponse response, String index, HttpSession session, DataRepo dataRepo) throws ServletException, IOException {
+        Long userId = Long.valueOf(request.getParameter("userId"));
+
+        StockDataAPIService apiService = new StockDataAPIService();
+        Stock newCurrent = apiService.getResponceByAPI(index.toUpperCase(), userId);
+
+        if (newCurrent != null) {
+            session.setAttribute("currentStock", dataRepo.selectStockById(newCurrent.getId()));
+        }
+        User user = dataRepo.selectUserById(userId);
+
+        session.setAttribute("user", user);
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
+        dispatcher.forward(request, response);
+    }
+
+    private void changeCurrentStock(HttpServletRequest request, HttpServletResponse response, String newCurrent, HttpSession session, DataRepo dataRepo) throws ServletException, IOException {
+        Long newCurrentId = Long.valueOf(newCurrent);
+
+        session.setAttribute("currentStock", dataRepo.selectStockById(newCurrentId));
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
+        dispatcher.forward(request, response);
+    }
+
+    private void addPurpose(HttpServletRequest request, HttpServletResponse response, String purposeCostEntered, HttpSession session, DataRepo dataRepo) throws ServletException, IOException {
+        Long stockId = Long.valueOf(request.getParameter("stockPurposeId"));
+        Double purposeCost = Double.valueOf(purposeCostEntered);
+        String purposeDate = request.getParameter("purposeDate");
+
+        PurposeService purposeService = new PurposeService();
+        purposeService.insertStock(purposeDate, stockId, purposeCost);
+
+        session.setAttribute("currentStock", dataRepo.selectStockById(stockId));
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
+        dispatcher.forward(request, response);
+    }
+
+    private void refreshStockCost(HttpServletRequest request, HttpServletResponse response, HttpSession session, String refreshStockId) throws ServletException, IOException {
+        StockDataAPIService apiService = new StockDataAPIService();
+        Stock refreshedStock = apiService.refreshPriceStock(Long.valueOf(refreshStockId));
+
+        session.setAttribute("currentStock", refreshedStock);
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
+        dispatcher.forward(request, response);
+    }
+
+    private void deleteStock(HttpServletRequest request, HttpServletResponse response, String deleteStockId, HttpSession session, DataRepo dataRepo) throws ServletException, IOException {
+        DeleteStockService deleteStockService = new DeleteStockService();
+        deleteStockService.deleteStock(Long.valueOf(deleteStockId));
+
+        Stock currentStock = (Stock) session.getAttribute("currentStock");
+
+        if (currentStock.getId().equals(Long.valueOf(deleteStockId)))
+            session.setAttribute("currentStock", null);
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("home.jsp");
+        dispatcher.forward(request, response);
     }
 
     @Override

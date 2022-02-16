@@ -10,7 +10,6 @@ import com.stock.keeper.stockkeeper.scripts.InsertScripts;
 import com.stock.keeper.stockkeeper.scripts.SelectScripts;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -210,10 +209,6 @@ public class DataRepo implements DataRepository {
         }
     }
 
-    @Override
-    public void selectPrice() {
-    }
-
     public List<Price> selectPriceByStockId(Long stockId) {
         System.out.println("select costs by stock_id");
 
@@ -297,13 +292,12 @@ public class DataRepo implements DataRepository {
             preparedStatement.setString(2, password);
             preparedStatement.setString(3, name);
 
-            //if (preparedStatement.execute()) {
             preparedStatement.execute();
 
             user.setId(id);
             user.setUsr_name(name);
             user.setPassword(password);
-            //}
+
             return user;
         } catch (SQLException e) {
             e.printStackTrace();

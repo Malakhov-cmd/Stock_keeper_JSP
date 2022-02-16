@@ -14,7 +14,6 @@ public class UserLoginServlet extends HttpServlet {
         super();
     }
 
-
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         RequestDispatcher requestDispatcher = request.getRequestDispatcher("login.jsp");

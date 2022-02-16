@@ -11,7 +11,6 @@ import java.io.IOException;
 
 @WebServlet(name="logout", value="/")
 public class UserLogoutServlet extends HttpServlet {
-    //private static final long serialVersionUID = 1L;
 
     public UserLogoutServlet() {
         super();
@@ -23,6 +22,8 @@ public class UserLogoutServlet extends HttpServlet {
         if (session != null) {
             session.removeAttribute("user");
             session.removeAttribute("stocks");
+            session.removeAttribute("currentStock");
+            session.removeAttribute("userId");
 
             RequestDispatcher dispatcher = request.getRequestDispatcher("index.jsp");
             dispatcher.forward(request, response);

@@ -8,14 +8,16 @@ import com.stock.keeper.stockkeeper.scripts.CreateDeleteDBscripts;
 import com.stock.keeper.stockkeeper.scripts.DeleteScripts;
 import com.stock.keeper.stockkeeper.scripts.InsertScripts;
 import com.stock.keeper.stockkeeper.scripts.SelectScripts;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class DataRepo implements DataRepository {
-    private final static String DB_URL = "jdbc:postgresql://localhost:5432/Testing";
+    private final static String DB_URL = "jdbc:postgresql://localhost:5432/STOCKDATA";
 
     private final static String USER = "postgres";
     private final static String PASS = "Orel-5287";
@@ -24,15 +26,13 @@ public class DataRepo implements DataRepository {
         try {
             DriverManager.getConnection(DB_URL, USER, PASS);
         } catch (SQLException e) {
-            System.out.println("Установка соединения");
-            //createDataBase();
-            //deleteDataBase();
+            log.info("Establishing a connection");
         }
     }
 
     @Override
     public void createDataBase() {
-        System.out.println("Create db");
+        log.info("Create db");
         try (Connection connection = DriverManager
                 .getConnection(DB_URL, USER, PASS);
              PreparedStatement statement = connection.prepareStatement(
@@ -41,13 +41,13 @@ public class DataRepo implements DataRepository {
         ) {
             statement.execute();
         } catch (SQLException e) {
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Create db: SQLException");
         }
     }
 
     @Override
     public void deleteDataBase() {
-        System.out.println("Delete db");
+        log.info("Delete db");
         try (Connection connection = DriverManager
                 .getConnection(DB_URL, USER, PASS);
              PreparedStatement statement = connection.prepareStatement(
@@ -56,7 +56,7 @@ public class DataRepo implements DataRepository {
         ) {
             statement.execute();
         } catch (SQLException e) {
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Delete db: SQLException");
         }
     }
 
@@ -70,15 +70,14 @@ public class DataRepo implements DataRepository {
             resultSet.next();
             return resultSet.getLong(1);
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Select next val: SQLException");
             return -1L;
         }
     }
 
     @Override
     public List<User> selectUser(String name, String password) {
-        System.out.println("select user");
+        log.info("select user");
 
         List<User> selectedUsers = new ArrayList<>();
 
@@ -93,23 +92,20 @@ public class DataRepo implements DataRepository {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
-                User user = new User();
-                user.setId(resultSet.getLong("id"));
-                user.setPassword(resultSet.getString("password"));
-                user.setUsr_name(resultSet.getString("usr_name"));
-
-                selectedUsers.add(user);
+                selectedUsers.add(new User()
+                        .setId(resultSet.getLong("id"))
+                        .setPassword(resultSet.getString("password"))
+                        .setUsr_name(resultSet.getString("usr_name")));
             }
             return selectedUsers;
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Select user: SQLException");
             return selectedUsers;
         }
     }
 
     public User selectUserById(Long id) {
-        System.out.println("select user by id");
+        log.info("select user by id");
 
         User findedUser = new User();
 
@@ -123,21 +119,20 @@ public class DataRepo implements DataRepository {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
-                findedUser.setId(resultSet.getLong("id"));
-                findedUser.setPassword(resultSet.getString("password"));
-                findedUser.setUsr_name(resultSet.getString("usr_name"));
+                findedUser.setId(resultSet.getLong("id"))
+                        .setPassword(resultSet.getString("password"))
+                        .setUsr_name(resultSet.getString("usr_name"));
             }
             return findedUser;
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Select user by id: SQLException");
             return findedUser;
         }
     }
 
     @Override
     public Stock selectStockById(Long stockId) {
-        System.out.println("select stock by id");
+        log.info("select stock by id");
 
         Stock findedStock = new Stock();
 
@@ -151,28 +146,27 @@ public class DataRepo implements DataRepository {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
-                findedStock.setId(resultSet.getLong("id"));
-                findedStock.setDate_init(resultSet.getTimestamp("date_init").toLocalDateTime());
-                findedStock.setDescription(resultSet.getString("description"));
-                findedStock.setImg_link(resultSet.getString("Img_link"));
-                findedStock.setIndex(resultSet.getString("index"));
-                findedStock.setName(resultSet.getString("name"));
+                findedStock.setId(resultSet.getLong("id"))
+                        .setDate_init(resultSet.getTimestamp("date_init").toLocalDateTime())
+                        .setDescription(resultSet.getString("description"))
+                        .setImg_link(resultSet.getString("Img_link"))
+                        .setIndex(resultSet.getString("index"))
+                        .setName(resultSet.getString("name"))
 
-                findedStock.setOwner(selectUserById(resultSet.getLong("usr_id")));
-                findedStock.setPriceList(selectPriceByStockId(stockId));
-                findedStock.setPurposeList(selectPurposeBySrockId(stockId));
+                        .setOwner(selectUserById(resultSet.getLong("usr_id")))
+                        .setPriceList(selectPriceByStockId(stockId))
+                        .setPurposeList(selectPurposeBySrockId(stockId));
             }
             return findedStock;
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Select stock by id: SQLException");
             return findedStock;
         }
     }
 
     @Override
     public List<Stock> selectStocksByUsrId(Long userId) {
-        System.out.println("select stocks by userId");
+        log.info("select stocks by userId");
 
         List<Stock> findedStocks = new ArrayList<>();
 
@@ -188,29 +182,28 @@ public class DataRepo implements DataRepository {
             while (resultSet.next()) {
                 Stock userStock = new Stock();
 
-                userStock.setId(resultSet.getLong("id"));
-                userStock.setDate_init(resultSet.getTimestamp("date_init").toLocalDateTime());
-                userStock.setDescription(resultSet.getString("description"));
-                userStock.setImg_link(resultSet.getString("Img_link"));
-                userStock.setIndex(resultSet.getString("index"));
-                userStock.setName(resultSet.getString("name"));
+                userStock.setId(resultSet.getLong("id"))
+                        .setDate_init(resultSet.getTimestamp("date_init").toLocalDateTime())
+                        .setDescription(resultSet.getString("description"))
+                        .setImg_link(resultSet.getString("Img_link"))
+                        .setIndex(resultSet.getString("index"))
+                        .setName(resultSet.getString("name"))
 
-                userStock.setOwner(selectUserById(resultSet.getLong("usr_id")));
-                userStock.setPriceList(selectPriceByStockId(userStock.getId()));
-                userStock.setPurposeList(selectPurposeBySrockId(userStock.getId()));
+                        .setOwner(selectUserById(resultSet.getLong("usr_id")))
+                        .setPriceList(selectPriceByStockId(userStock.getId()))
+                        .setPurposeList(selectPurposeBySrockId(userStock.getId()));
 
                 findedStocks.add(userStock);
             }
             return findedStocks;
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Select stocks by userId: SQLException");
             return findedStocks;
         }
     }
 
     public List<Price> selectPriceByStockId(Long stockId) {
-        System.out.println("select costs by stock_id");
+        log.info("select costs by stock_id");
 
         List<Price> priceList = new ArrayList<>();
 
@@ -224,26 +217,22 @@ public class DataRepo implements DataRepository {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
-                Price price = new Price();
-
-                price.setId(resultSet.getLong("id"));
-                price.setCost(resultSet.getDouble("cost"));
-                price.setDate(resultSet.getDate("date"));
-                price.setStock_id(resultSet.getLong("stock_id"));
-
-                priceList.add(price);
+                priceList.add(new Price()
+                        .setId(resultSet.getLong("id"))
+                        .setCost(resultSet.getDouble("cost"))
+                        .setDate(resultSet.getDate("date"))
+                        .setStock_id(resultSet.getLong("stock_id")));
             }
             return priceList;
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Select costs by stock_id: SQLException");
             return priceList;
         }
     }
 
     @Override
     public List<Purpose> selectPurposeBySrockId(Long stockId) {
-        System.out.println("select purpose by stock_id");
+        log.info("select purpose by stock_id");
 
         List<Purpose> purposesList = new ArrayList<>();
 
@@ -257,27 +246,23 @@ public class DataRepo implements DataRepository {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
-                Purpose purpose = new Purpose();
-
-                purpose.setId(resultSet.getLong("id"));
-                purpose.setCost(resultSet.getDouble("cost"));
-                purpose.setDate(resultSet.getDate("date"));
-                purpose.setPurposeDate(resultSet.getDate("purpose_date"));
-                purpose.setStock_id(resultSet.getLong("stock_id"));
-
-                purposesList.add(purpose);
+                purposesList.add(new Purpose()
+                        .setId(resultSet.getLong("id"))
+                        .setCost(resultSet.getDouble("cost"))
+                        .setDate(resultSet.getDate("date"))
+                        .setPurposeDate(resultSet.getDate("purpose_date"))
+                        .setStock_id(resultSet.getLong("stock_id")));
             }
             return purposesList;
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Select purpose by stock_id: SQLException");
             return purposesList;
         }
     }
 
     @Override
     public User insertUser(String name, String password) {
-        System.out.println("insert user");
+        log.info("insert user");
 
         User user = new User();
 
@@ -294,14 +279,13 @@ public class DataRepo implements DataRepository {
 
             preparedStatement.execute();
 
-            user.setId(id);
-            user.setUsr_name(name);
-            user.setPassword(password);
+            user.setId(id)
+                    .setUsr_name(name)
+                    .setPassword(password);
 
             return user;
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Insert user: SQLException");
             return user;
         }
     }
@@ -312,7 +296,7 @@ public class DataRepo implements DataRepository {
             String imgLink, String index,
             String name, Long usrId
     ) {
-        System.out.println("insert stock");
+        log.info("insert stock");
 
         Stock stock = new Stock();
 
@@ -333,27 +317,26 @@ public class DataRepo implements DataRepository {
 
             preparedStatement.execute();
 
-            stock.setId(id);
-            stock.setOwner(selectUserById(usrId));
-            stock.setPriceList(new ArrayList<>());
-            stock.setPurposeList(new ArrayList<>());
-            stock.setDate_init(dateInit);
-            stock.setIndex(index);
-            stock.setName(name);
-            stock.setImg_link(imgLink);
-            stock.setDescription(description);
+            stock.setId(id)
+                    .setOwner(selectUserById(usrId))
+                    .setPriceList(new ArrayList<>())
+                    .setPurposeList(new ArrayList<>())
+                    .setDate_init(dateInit)
+                    .setIndex(index)
+                    .setName(name)
+                    .setImg_link(imgLink)
+                    .setDescription(description);
 
             return stock;
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Insert stock: SQLException");
             return stock;
         }
     }
 
     @Override
     public Price insertPrice(Double cost, Date date, Long stock_id) {
-        System.out.println("insert price");
+        log.info("insert price");
 
         Price price = new Price();
 
@@ -371,22 +354,21 @@ public class DataRepo implements DataRepository {
 
             preparedStatement.execute();
 
-            price.setId(geteratedId);
-            price.setDate(date);
-            price.setCost(cost);
-            price.setStock_id(stock_id);
+            price.setId(geteratedId)
+                    .setDate(date)
+                    .setCost(cost)
+                    .setStock_id(stock_id);
 
             return price;
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Insert price: SQLException");
             return price;
         }
     }
 
     @Override
     public Purpose insertPurpose(Double cost, Date date, Date purposeDate, Long stock_id) {
-        System.out.println("insert purpose");
+        log.info("insert purpose");
 
         Purpose purpose = new Purpose();
 
@@ -405,22 +387,21 @@ public class DataRepo implements DataRepository {
 
             preparedStatement.execute();
 
-            purpose.setId(geteratedId);
-            purpose.setDate(date);
-            purpose.setCost(cost);
-            purpose.setStock_id(stock_id);
+            purpose.setId(geteratedId)
+                    .setDate(date)
+                    .setCost(cost)
+                    .setStock_id(stock_id);
 
             return purpose;
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Insert purpose: SQLException");
             return purpose;
         }
     }
 
     @Override
     public void deleteStockById(Long stockId) {
-        System.out.println("delete stock by id");
+        log.info("delete stock by id");
 
         deletePricesByStockId(stockId);
         deletePurposesByStockId(stockId);
@@ -434,14 +415,13 @@ public class DataRepo implements DataRepository {
 
             preparedStatement.execute();
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Delete stock by id: SQLException");
         }
     }
 
     @Override
     public void deletePricesByStockId(Long stockId) {
-        System.out.println("delete prices by stock Id");
+        log.info("delete prices by stock Id");
 
         try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
              PreparedStatement preparedStatement = connection.prepareStatement(
@@ -452,14 +432,13 @@ public class DataRepo implements DataRepository {
 
             preparedStatement.execute();
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Delete prices by stock Id: SQLException");
         }
     }
 
     @Override
     public void deletePurposesByStockId(Long stockId) {
-        System.out.println("delete purposes by stock Id");
+        log.info("delete purposes by stock Id");
 
         try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
              PreparedStatement preparedStatement = connection.prepareStatement(
@@ -470,8 +449,7 @@ public class DataRepo implements DataRepository {
 
             preparedStatement.execute();
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка исполнения запроса");
+            log.error("Request execution error - Delete purposes by stock Id: SQLException");
         }
     }
 }

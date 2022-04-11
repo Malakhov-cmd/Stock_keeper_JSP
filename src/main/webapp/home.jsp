@@ -45,7 +45,10 @@
     List<Map<Object, Object>> list = new ArrayList<>();
 
     if (currentStock.getId() != null) {
-        currentStock.getPriceList().stream().forEach(item -> {
+        currentStock
+                .getPriceList()
+                .stream()
+                .forEach(item -> {
             Map<Object, Object> map = new HashMap<>();
             map.put("label", item.getDate());
             map.put("y", item.getCost());

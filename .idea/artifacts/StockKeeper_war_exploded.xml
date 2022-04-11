@@ -6,7 +6,6 @@
         <exploded>true</exploded>
         <module>StockKeeper</module>
         <packaging>war</packaging>
-        <unpackNestedArchives>false</unpackNestedArchives>
       </options>
     </properties>
     <root id="root">
@@ -15,7 +14,7 @@
           <element id="module-output" name="StockKeeper" />
         </element>
         <element id="directory" name="lib">
-          <element id="library" level="project" name="Maven: org.postgresql:postgresql:42.3.2" />
+          <element id="library" level="project" name="Maven: org.postgresql:postgresql:42.3.3" />
           <element id="library" level="project" name="Maven: org.checkerframework:checker-qual:3.5.0" />
           <element id="library" level="project" name="Maven: org.thymeleaf:thymeleaf:3.0.11.RELEASE" />
           <element id="library" level="project" name="Maven: ognl:ognl:3.1.12" />

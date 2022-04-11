@@ -7,8 +7,10 @@ import com.stock.keeper.stockkeeper.domain.Stock;
 import com.stock.keeper.stockkeeper.repo.DataRepo;
 import com.stock.keeper.stockkeeper.repo.DataRepository;
 import com.stock.keeper.stockkeeper.service.DTO.StockApiDTO;
+import com.stock.keeper.stockkeeper.util.AccountAPI;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.fluent.Request;
 import reactor.core.publisher.Flux;
 
@@ -19,36 +21,25 @@ import java.util.Date;
 
 @NoArgsConstructor
 @Data
+@Slf4j
 public class StockDataAPIService {
-    private final String KeyAPI_Origin = "S9xvRnDm5whNDqDXaGriI3Wbcohpqy84";
-
-    private final String KeyAPI_Support_1 = "mayjkucLrChPDlhaTpnIqAC2hijvY1m0";
-    private final String KeyAPI_Support_2 = "ron4VZCL7YfIexBDqT1LL6hXmII52ehk";
-    private final String KeyAPI_Support_3 = "3N_1VkZEAzNy0sMdicgZO9TtA6BqqEfI";
-    private final String KeyAPI_Support_4 = "DQmFDhwAUp3TYxz2jJhXXqZRUO2384uF";
-    private final String KeyAPI_Support_5 = "2XooTLjwl0vAGVAe5z7q5uZLQSbDuXNp";
-    private final String KeyAPI_Support_6 = "X7rbgiA_cC3Flx_ohpu1pmpyaDqFauAW";
-
-    private final String KeyAPI_Refresher = "xbC5mDo7lJT4o0W40xReBhBXp4rYgC3h";
-
-    private final String KeyAPI_Info = "s8WqYhKmz0ZJ07x4X9hpC1hTEZaOWfGd";
-    private final String KeyAPI_Img = "2CyqFAsm0z7nVjB6bAnmarfnixK8mCGL";
-
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final Long dayValue = 86_400_000L;
     private DataRepository dataRepository = new DataRepo();
 
+    private AccountAPI accountAPI = new AccountAPI();
+
     public Stock getResponceByAPI(String ticker, Long userId) {
         try {
             if (!isAlreadyInStockList(ticker, userId)) {
                 String stock = getStockInfoViaJSON(ticker);
-                System.out.println("STOCK info : " + stock);
+                log.info("STOCK info : {}", stock);
                 if (!stock.equals("Invalid data")) {
                     try {
                        return fillInfoAboutStock(ticker, userId, stock);
                     } catch (JsonProcessingException e) {
-                        System.err.println("JSON parsing exception");
+                        log.error("JSON parsing exception");
                     }
                 }
             }
@@ -65,7 +56,7 @@ public class StockDataAPIService {
                 .anyMatch(stock -> stock.getIndex().equals(ticker));
     }
 
-    private Flux<String> getCostsData(String ticker, Long ownerId, String infoJSON) throws JsonProcessingException {
+    private Flux<String> getCostsData(String ticker) {
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
         Date date = new Date();
 
@@ -79,27 +70,27 @@ public class StockDataAPIService {
                     else pastTimeValue = 31_536_000_000L - 7_884_000_000L * i;
 
                     try {
-                        stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue), KeyAPI_Origin);
+                        stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue), accountAPI.getKeyAPI_Origin());
                     } catch (IOException e) {
                         try {
-                            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue), KeyAPI_Support_1);
+                            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue), accountAPI.getKeyAPI_Support_1());
                         } catch (IOException ex) {
                             try {
-                                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 2), KeyAPI_Support_2);
+                                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 2), accountAPI.getKeyAPI_Support_2());
                             } catch (IOException exp) {
                                 try {
-                                    stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 3), KeyAPI_Support_3);
+                                    stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 3), accountAPI.getKeyAPI_Support_3());
                                 } catch (IOException expt) {
                                     try {
-                                        stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 4), KeyAPI_Support_4);
+                                        stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 4), accountAPI.getKeyAPI_Support_4());
                                     } catch (IOException exptn) {
                                         try {
-                                            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 5), KeyAPI_Support_5);
+                                            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 5), accountAPI.getKeyAPI_Support_5());
                                         } catch (IOException exptnv) {
                                             try {
-                                                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 6), KeyAPI_Support_6);
+                                                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - pastTimeValue - dayValue * 6), accountAPI.getKeyAPI_Support_6());
                                             } catch (IOException exptnvl) {
-                                                System.err.println("Invalid data");
+                                                log.error("Invalid data");
                                             }
                                         }
                                     }
@@ -115,7 +106,7 @@ public class StockDataAPIService {
 
         Stock stock = insertStock(ticker, ownerId, infoJSON);
 
-        getCostsData(ticker, ownerId, infoJSON).subscribe(stringStockDTO -> {
+        getCostsData(ticker).subscribe(stringStockDTO -> {
             try {
                 StockApiDTO stockApiDTO = processDTOtoStock(stringStockDTO);
                 dataRepository.insertPrice(
@@ -139,7 +130,7 @@ public class StockDataAPIService {
 
         String urlIMG = "";
         try {
-            urlIMG = node.get("results").get("branding").get("icon_url").asText() + "?apiKey=" + KeyAPI_Img;
+            urlIMG = node.get("results").get("branding").get("icon_url").asText() + "?apiKey=" + accountAPI.getKeyAPI_Img();
         } catch (NullPointerException ex){
             urlIMG = "https://www.publicdomainpictures.net/pictures/280000/nahled/not-found-image-15383864787lu.jpg";
         }
@@ -151,7 +142,7 @@ public class StockDataAPIService {
     private String getStockInfoViaJSON(String index)
             throws IOException {
         return Request
-                .Get("https://api.polygon.io/v3/reference/tickers/" + index + "?apiKey=" + KeyAPI_Info)
+                .Get("https://api.polygon.io/v3/reference/tickers/" + index + "?apiKey=" + accountAPI.getKeyAPI_Info())
                 .execute()
                 .returnContent()
                 .asString();
@@ -208,22 +199,22 @@ public class StockDataAPIService {
         String stockData = "";
 
         try {
-            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue), KeyAPI_Refresher);
+            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue), accountAPI.getKeyAPI_Refresher());
         } catch (IOException e) {
             try {
-                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 2), KeyAPI_Refresher);
+                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 2), accountAPI.getKeyAPI_Refresher());
             } catch (IOException ex) {
                 try {
-                    stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 3), KeyAPI_Refresher);
+                    stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 3), accountAPI.getKeyAPI_Refresher());
                 } catch (IOException exc) {
                     try {
-                        stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 4), KeyAPI_Refresher);
+                        stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 4), accountAPI.getKeyAPI_Refresher());
                     } catch (IOException ioException) {
                         try {
-                            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 5), KeyAPI_Refresher);
+                            stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 5), accountAPI.getKeyAPI_Refresher());
                         } catch (IOException exception) {
                             try {
-                                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 6), KeyAPI_Refresher);
+                                stockData = getStockDataByDateViaJSON(ticker, formater.format(date.getTime() - dayValue * 6), accountAPI.getKeyAPI_Refresher());
                             } catch (IOException e1) {
                                 e1.printStackTrace();
                             }
